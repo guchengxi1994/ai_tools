@@ -2,7 +2,6 @@ use candle_core::{Device, Tensor};
 use candle_nn::VarBuilder;
 use candle_transformers::models::qwen2::{Config as Qwen2Config, ModelForCausalLM};
 
-
 pub struct Model<T> {
     pub inner: Option<T>,
     pub model_path: String,
@@ -13,6 +12,8 @@ pub trait ModelRun {
     fn forward(&mut self, xs: &Tensor, s: usize) -> anyhow::Result<Tensor>;
 
     fn load(&mut self) -> anyhow::Result<()>;
+
+    fn clear_kv_cache(&mut self);
 }
 
 impl Model<ModelForCausalLM> {
@@ -30,6 +31,13 @@ impl ModelRun for Model<candle_transformers::models::qwen2::ModelForCausalLM> {
         match &mut self.inner {
             Some(_i) => anyhow::Ok((*_i).forward(xs, s)?),
             None => anyhow::bail!("model not loaded"),
+        }
+    }
+
+    fn clear_kv_cache(&mut self) {
+        match &mut self.inner {
+            Some(_i) => _i.clear_kv_cache(),
+            None => {}
         }
     }
 

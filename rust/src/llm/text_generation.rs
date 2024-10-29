@@ -41,6 +41,7 @@ where
     pub fn run(&mut self, prompt: &str, sample_len: usize) -> anyhow::Result<()> {
         use std::io::Write;
         self.tokenizer.clear();
+        self.model.clear_kv_cache();
         let mut tokens = self
             .tokenizer
             .tokenizer()
