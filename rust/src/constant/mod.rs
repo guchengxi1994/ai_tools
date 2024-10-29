@@ -1003,3 +1003,5 @@ pub const CLASSES: [&str; 1000] = [
     "ear, spike, capitulum",
     "toilet tissue, toilet paper, bathroom tissue",
 ];
+
+pub const DEFAULT_SYSTEM_ROLE: &str = "You are a helpful assistant.";

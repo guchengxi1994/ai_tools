@@ -3,4 +3,5 @@ pub mod api;
 mod constant;
 mod frb_generated;
 mod tests;
+mod llm;
 mod utils;

@@ -1,3 +1,4 @@
+import 'package:ai_tools/src/rust/api/llm.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_tools/src/rust/frb_generated.dart';
@@ -37,7 +38,16 @@ class MyApp extends StatelessWidget {
                     }
                   }
                 },
-                child: Text("Select and infer"))
+                child: Text("Select and infer")),
+            ElevatedButton(
+                onPressed: () async {
+                  qwen2Chat(
+                      userPrompt: "请解释机器学习的基本概念。",
+                      systemPrompt: "请用简洁、专业的语言回答问题。",
+                      modelPath:
+                          r"D:\github_repo\ai_tools\rust\assets\Qwen2-0___5B-Instruct");
+                },
+                child: Text("qwen2 chat test"))
           ],
         ),
       ),
