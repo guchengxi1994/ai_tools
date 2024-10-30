@@ -2,6 +2,8 @@ use candle_core::{Device, Tensor};
 use candle_transformers::generation::LogitsProcessor;
 use tokenizers::Tokenizer;
 
+use crate::llm::ChatResponse;
+
 use super::{model::ModelRun, token_output_stream::TokenOutputStream};
 
 pub struct TextGeneration<T> {
@@ -62,6 +64,7 @@ where
             None => anyhow::bail!("cannot find the <|endoftext|> token"),
         };
         let start_gen = std::time::Instant::now();
+        let mut chat_response = ChatResponse::new();
         for index in 0..sample_len {
             let context_size = if index > 0 { 1 } else { tokens.len() };
             let start_pos = tokens.len().saturating_sub(context_size);
@@ -91,6 +94,11 @@ where
             }
             if let Some(t) = self.tokenizer.next_token(next_token)? {
                 print!("{t}");
+                chat_response.set_content(t);
+                if let Some(s) = CHAT_RESPONSE_SINK.read().unwrap().as_ref(){
+                    let _ = s.add(chat_response.clone());
+                }
+
                 std::io::stdout().flush()?;
             }
         }
