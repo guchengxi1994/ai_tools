@@ -209,7 +209,6 @@ mod mlp_test {
         anyhow::Ok(())
     }
 
-
     #[test]
     pub fn test_load_model() -> anyhow::Result<()> {
         let dev = Device::cuda_if_available(0)?;
@@ -217,7 +216,7 @@ mod mlp_test {
         varmap.load("model.bin")?;
         let vs = VarBuilder::from_varmap(&varmap, DType::F32, &dev);
         let model = MultiLevelPerceptron::new(vs)?;
-        let test_data = Tensor::randn(0f32, 20f32, (1,37), &dev)?;
+        let test_data = Tensor::randn(0f32, 20f32, (1, 37), &dev)?;
         println!("{:?}", model.forward(&test_data)?.to_vec2::<f32>()?);
 
         anyhow::Ok(())

@@ -1,11 +1,11 @@
-#[allow(dead_code,unused_variables)]
+#[allow(dead_code, unused_variables)]
 mod magika_test;
-#[allow(dead_code, unused_imports,unused_variables)]
+#[allow(dead_code, unused_imports, unused_variables)]
 mod mlp_test;
 #[macro_use]
 pub mod macros;
 
-#[allow(unused_imports, dead_code,unused_variables)]
+#[allow(unused_imports, dead_code, unused_variables)]
 mod tests {
     use std::any;
     use std::mem::forget;
