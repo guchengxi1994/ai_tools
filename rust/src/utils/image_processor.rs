@@ -23,6 +23,7 @@ impl ImageProcessor {
         anyhow::Ok(r)
     }
 
+    #[allow(dead_code)]
     pub fn load_image_with_mean_and_std(
         path: &str,
         size: usize,

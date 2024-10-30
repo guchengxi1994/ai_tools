@@ -1,8 +1,16 @@
-#[allow(unused_imports, dead_code)]
+#[allow(dead_code,unused_variables)]
+mod magika_test;
+#[allow(dead_code, unused_imports,unused_variables)]
+mod mlp_test;
+#[macro_use]
+pub mod macros;
+
+#[allow(unused_imports, dead_code,unused_variables)]
 mod tests {
     use std::any;
     use std::mem::forget;
 
+    use candle_core::cuda::cudarc::driver::result::device;
     use candle_core::{Device, Result, Tensor};
     use candle_nn::VarBuilder;
     use candle_transformers::generation::LogitsProcessor;
@@ -1402,10 +1410,43 @@ mod tests {
     }
 
     #[test]
+    fn file_type_test() -> anyhow::Result<()> {
+        let device = Device::Cpu;
+        let mut img = candle_core::Tensor::randn(0.5, 1.0, (1, 512), &device)?;
+        img = img.to_dtype(candle_core::DType::F32)?;
+        let model = candle_onnx::read_file(r"assets\converted_model.onnx")?;
+        println!("model loaded");
+        let graph = model.graph.as_ref().unwrap();
+        let mut inputs = std::collections::HashMap::new();
+        for i in 0..graph.input.len() {
+            println!("input: {}", graph.input[i].name.to_string());
+            println!("input : {:?}", graph.input[i].r#type);
+            println!("===============================================");
+        }
+        inputs.insert(graph.input[0].name.to_string(), img);
+
+        let mut outputs = candle_onnx::simple_eval(&model, inputs)?;
+        let output = outputs.remove(&graph.output[0].name).unwrap();
+
+        let prs = candle_core::IndexOp::i(&output, 0)?.to_vec1::<f32>()?;
+
+        let mut top: Vec<_> = prs.iter().enumerate().collect();
+        top.sort_by(|a, b| b.1.partial_cmp(a.1).unwrap());
+        let top = top.into_iter().take(5).collect::<Vec<_>>();
+
+        for &(i, p) in &top {
+            println!("{:50}: {:.2}%", i, p * 100.0);
+        }
+
+        anyhow::Ok(())
+    }
+
+    #[test]
     fn qwen_test() -> anyhow::Result<()> {
         println!("start");
         let device = Device::cuda_if_available(0)?;
-        let model_path = "assets/Qwen2-0___5B-Instruct";
+        // let model_path = "assets/Qwen2-0___5B-Instruct";
+        let model_path = "assets/Qwen2___5-0___5B-Instruct";
         let model = format!("{}/model.safetensors", model_path);
         let token_file_path = format!("{}/tokenizer.json", model_path);
         let tokenizer = Tokenizer::from_file(token_file_path).map_err(anyhow::Error::msg)?;

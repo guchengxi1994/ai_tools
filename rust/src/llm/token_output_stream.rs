@@ -5,6 +5,7 @@ pub struct TokenOutputStream {
     current_index: usize,
 }
 
+#[allow(unused_variables,dead_code)]
 impl TokenOutputStream {
     pub fn new(tokenizer: tokenizers::Tokenizer) -> Self {
         Self {

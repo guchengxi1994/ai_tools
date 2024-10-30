@@ -1,0 +1,1 @@
+cargo test  --package rust_lib_ai_tools --lib --tests ::mlp_test::mlp_test::m_test -- --nocapture
