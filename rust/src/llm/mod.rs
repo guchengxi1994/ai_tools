@@ -111,7 +111,7 @@ impl ChatMessages {
                 message.role, message.content
             );
         }
-        result += "<|im_start|>assistant\n";
+        result += "<|im_start|>assistant\n现在我将一步步思考，从分析问题开始并将问题分解\n";
 
         result
     }

@@ -27,11 +27,12 @@ dependencies:
     path: rust_builder
   toastification: ^2.3.0
   path_provider: ^2.1.5
+  animated_toggle_switch: ^0.8.3
   
 
 dev_dependencies:
   build_runner: ^2.4.13 # dart run build_runner build
-  flutter_launcher_icons: ^0.14.1 # dart run flutter_launcher_icons:generate
+  flutter_launcher_icons: ^0.14.1 # dart run flutter_launcher_icons
   flutter_lints: ^5.0.0
   flutter_test:
     sdk: flutter

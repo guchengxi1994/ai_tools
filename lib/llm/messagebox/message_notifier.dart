@@ -28,9 +28,13 @@ class MessageNotifier extends AutoDisposeNotifier<MessageState> {
 
     final l = List<MessageBox>.from(state.messageBox)..add(box);
 
-    state = MessageState(
-      messageBox: l,
+    // state = MessageState(
+    //   messageBox: l,
+    //   isLoading: state.isLoading,
+    // );
+    state = state.copyWith(
       isLoading: state.isLoading,
+      messageBox: l,
     );
 
     scrollController.jumpTo(
@@ -44,15 +48,26 @@ class MessageNotifier extends AutoDisposeNotifier<MessageState> {
     );
   }
 
-  Future chat(String q) async {
+  Future chat(
+    String q,
+  ) async {
     await saveHistory(q, ChatRole.user);
-    List<ChatHistory> list = ((await database.isar!.chatHistorys
-                .where()
-                .sortByCreateAtDesc()
-                .limit(6)
-                .findAll())
-            .reversed)
-        .toList();
+    List<ChatHistory> list;
+    if (state.useHistory) {
+      list = ((await database.isar!.chatHistorys
+                  .where()
+                  .sortByCreateAtDesc()
+                  .limit(6)
+                  .findAll())
+              .reversed)
+          .toList();
+    } else {
+      list = [
+        ChatHistory()
+          ..content = q
+          ..role = ChatRole.user
+      ];
+    }
 
     final String prompt = formatPromptWithHistory(list);
     logger.info("prompt: $prompt");
@@ -79,6 +94,10 @@ class MessageNotifier extends AutoDisposeNotifier<MessageState> {
         content: item.content,
       ));
     }
+    if (state.useThoughtChain) {
+      return formatPromptWithThoughtChain(
+          messages: llm.ChatMessages(field0: messages));
+    }
     return formatPrompt(messages: llm.ChatMessages(field0: messages));
   }
 
@@ -96,10 +115,15 @@ class MessageNotifier extends AutoDisposeNotifier<MessageState> {
         box.tokenGenetated = response.tokenGenerated ?? 0;
         box.tps = response.tps ?? 0;
       }
-      state = MessageState(
+      // state = MessageState(
+      //   messageBox: l..add(box),
+      //   isLoading: !(response.done ?? false),
+      // );
+      state = state.copyWith(
         messageBox: l..add(box),
         isLoading: !(response.done ?? false),
       );
+
       if (response.done == true) {
         await saveHistory(box.content, ChatRole.assistant);
       }
@@ -109,7 +133,11 @@ class MessageNotifier extends AutoDisposeNotifier<MessageState> {
             content: response.content ?? "",
             id: response.uuid!,
             stage: response.stage ?? ""));
-      state = MessageState(
+      // state = MessageState(
+      //   isLoading: !(response.done ?? false),
+      //   messageBox: l,
+      // );
+      state = state.copyWith(
         isLoading: !(response.done ?? false),
         messageBox: l,
       );
@@ -122,33 +150,17 @@ class MessageNotifier extends AutoDisposeNotifier<MessageState> {
 
   setLoading(bool b) {
     if (b != state.isLoading) {
-      state = MessageState(
-        messageBox: state.messageBox,
-        isLoading: b,
-      );
+      state = state.copyWith(isLoading: b);
     }
   }
 
-// refresh(List<HistoryMessages> messages) {
-//   if (state.isLoading) {
-//     return;
-//   }
+  void updateUseThoughtChain(bool value) {
+    state = state.copyWith(useThoughtChain: value);
+  }
 
-//   List<MessageBox> boxes = [];
-//   for (final i in messages) {
-//     if (i.messageType == MessageType.query) {
-//       boxes.add(RequestMessageBox(content: i.content ?? ""));
-//     } else {
-//       boxes.add(ResponseMessageBox(
-//           content: i.content ?? "", id: "history_${i.id}"));
-//     }
-//   }
-
-//   state = MessageState(
-//       messageBox: boxes,
-//       isLoading: false,
-//       isKnowledgeBaseChat: state.isKnowledgeBaseChat);
-// }
+  void updateWithHistory(bool value) {
+    state = state.copyWith(useHistory: value);
+  }
 }
 
 final messageProvider =

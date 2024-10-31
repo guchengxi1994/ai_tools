@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../input/input_field.dart';
+import 'crazy_switch.dart';
 import 'messagebox/llm_request_messagebox.dart';
 import 'messagebox/message_notifier.dart';
 import 'messagebox/messagebox_state.dart';
@@ -38,16 +39,58 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           width: MediaQuery.of(context).size.width,
           height: 50,
           child: Center(
-            child: Container(
-              padding: EdgeInsets.only(left: 30, right: 30, top: 5, bottom: 5),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey[300]!)),
-              child: Text(
-                'Qwen2.5 0.5B',
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding:
+                      EdgeInsets.only(left: 30, right: 30, top: 5, bottom: 5),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey[300]!)),
+                  child: Text(
+                    'Qwen2.5 0.5B',
+                    style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                Text(
+                  "Use thought chain",
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                CrazySwitch(
+                  current: state.useThoughtChain,
+                  onChanged: (value) {
+                    ref
+                        .read(messageProvider.notifier)
+                        .updateUseThoughtChain(value);
+                  },
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                Text(
+                  "With history",
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                CrazySwitch(
+                  current: state.useHistory,
+                  onChanged: (value) {
+                    ref.read(messageProvider.notifier).updateWithHistory(value);
+                  },
+                ),
+              ],
             ),
           ),
         ),
