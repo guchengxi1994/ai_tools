@@ -16,5 +16,18 @@ Future<void> qwen2Chat(
         systemPrompt: systemPrompt,
         modelPath: modelPath);
 
+Future<void> qwen2PromptChat(
+        {required String prompt, required String modelPath}) =>
+    RustLib.instance.api
+        .crateApiLlmQwen2PromptChat(prompt: prompt, modelPath: modelPath);
+
 Stream<ChatResponse> chatResponseStream() =>
     RustLib.instance.api.crateApiLlmChatResponseStream();
+
+String formatPrompt({required ChatMessages messages, String? system}) =>
+    RustLib.instance.api
+        .crateApiLlmFormatPrompt(messages: messages, system: system);
+
+String formatPromptWithThoughtChain({required ChatMessages messages}) =>
+    RustLib.instance.api
+        .crateApiLlmFormatPromptWithThoughtChain(messages: messages);

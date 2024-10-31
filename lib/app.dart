@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'chat_screen.dart';
+import 'llm/chat_screen.dart';
 import 'sidebar/sidebar.dart';
 import 'sidebar/sidebar_notifier.dart';
 

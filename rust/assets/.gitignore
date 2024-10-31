@@ -3,4 +3,5 @@
 *.jpg
 Qwen2___5-0___5B-Instruct/
 Qwen2-0___5B-Instruct/
+Qwen2-VL-2B-Instruct-GPTQ-Int4/
 *.csv

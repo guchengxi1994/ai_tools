@@ -6,6 +6,45 @@
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+class ChatMessage {
+  final String role;
+  final String content;
+
+  const ChatMessage({
+    required this.role,
+    required this.content,
+  });
+
+  @override
+  int get hashCode => role.hashCode ^ content.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChatMessage &&
+          runtimeType == other.runtimeType &&
+          role == other.role &&
+          content == other.content;
+}
+
+class ChatMessages {
+  final List<ChatMessage> field0;
+
+  const ChatMessages({
+    required this.field0,
+  });
+
+  @override
+  int get hashCode => field0.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChatMessages &&
+          runtimeType == other.runtimeType &&
+          field0 == other.field0;
+}
+
 class ChatResponse {
   final String content;
   final bool done;

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
+// ignore: depend_on_referenced_packages
+import 'package:logging/logging.dart';
+
+final logger = Logger("at");
+
 class ToastUtils {
   ToastUtils._();
 

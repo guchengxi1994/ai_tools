@@ -2,7 +2,7 @@ use std::sync::RwLock;
 
 use uuid::Uuid;
 
-use crate::frb_generated::StreamSink;
+use crate::{constant::{DEFAULT_SYSTEM_ROLE, THOUGHT_CHAIN_SYSTEM_ROLE}, frb_generated::StreamSink};
 
 pub mod model;
 pub mod qwen2;
@@ -71,3 +71,48 @@ pub const BASE_TEMPLATE: &str = "
 
 <|im_start|>assistant
 ";
+
+#[derive(Clone, Debug)]
+pub struct ChatMessage {
+    pub role: String,
+    pub content: String,
+}
+
+#[derive(Clone, Debug)]
+pub struct ChatMessages(pub Vec<ChatMessage>);
+
+impl ChatMessages {
+    pub fn format(&self, system: Option<String>) -> String {
+        let mut result = String::new();
+        if let Some(system) = system {
+            result += &format!("<|im_start|>system\n{}\n<|im_end|>\n", system);
+        } else {
+            result += &format!("<|im_start|>system\n{}\n<|im_end|>\n", DEFAULT_SYSTEM_ROLE);
+        }
+
+        for message in self.0.iter() {
+            result += &format!(
+                "<|im_start|>{}\n{}\n<|im_end|>\n",
+                message.role, message.content
+            );
+        }
+        result += "<|im_start|>assistant\n";
+
+        result
+    }
+
+    pub fn format_with_thought_chain(&self) -> String {
+        let mut result = String::new();
+        result += &format!("<|im_start|>system\n{}\n<|im_end|>\n", THOUGHT_CHAIN_SYSTEM_ROLE);
+
+        for message in self.0.iter() {
+            result += &format!(
+                "<|im_start|>{}\n{}\n<|im_end|>\n",
+                message.role, message.content
+            );
+        }
+        result += "<|im_start|>assistant\n";
+
+        result
+    }
+}

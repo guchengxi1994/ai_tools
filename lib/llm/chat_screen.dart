@@ -1,9 +1,9 @@
-import 'package:ai_tools/messagebox/chat_response.dart';
+import 'package:ai_tools/llm/messagebox/chat_response.dart';
 import 'package:ai_tools/src/rust/api/llm.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'input/input_field.dart';
+import '../input/input_field.dart';
 import 'messagebox/llm_request_messagebox.dart';
 import 'messagebox/message_notifier.dart';
 import 'messagebox/messagebox_state.dart';
@@ -34,6 +34,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     return Column(
       children: [
+        SizedBox(
+          width: MediaQuery.of(context).size.width,
+          height: 50,
+          child: Center(
+            child: Container(
+              padding: EdgeInsets.only(left: 30, right: 30, top: 5, bottom: 5),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey[300]!)),
+              child: Text(
+                'Qwen2.5 0.5B',
+                style:
+                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ),
         Flexible(
             child: SizedBox.expand(
           child: SingleChildScrollView(
@@ -58,11 +75,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         .read(messageProvider.notifier)
         .addMessageBox(RequestMessageBox(content: s));
 
-    qwen2Chat(
-        userPrompt: s,
-        modelPath:
-            r"D:\github_repo\ai_tools\rust\assets\Qwen2___5-0___5B-Instruct");
-
-    ref.read(messageProvider.notifier).jumpToMax();
+    ref.read(messageProvider.notifier).chat(s).then((_) {
+      ref.read(messageProvider.notifier).jumpToMax();
+    });
   }
 }

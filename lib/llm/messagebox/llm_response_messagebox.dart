@@ -8,9 +8,15 @@ import 'messagebox.dart';
 
 class ResponseMessageBox extends MessageBox {
   String id;
+  int tokenGenetated;
+  double tps;
 
   ResponseMessageBox(
-      {required super.content, required this.id, required super.stage});
+      {required super.content,
+      required this.id,
+      required super.stage,
+      this.tokenGenetated = 0,
+      this.tps = 0});
 
   static const double iconSize = 20;
 
@@ -34,16 +40,37 @@ class ResponseMessageBox extends MessageBox {
             borderRadius: const BorderRadius.all(Radius.circular(10))),
         child: Column(
           children: [
-            if (stage != "" && stage != "done")
+            if (stage != "done")
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text(stage),
+                  Text(stage == "" ? "回答中..." : stage),
                   SizedBox(
                     width: 10,
                   ),
                   BlinkingCursor()
                 ],
+              ),
+            if (stage == "done")
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding:
+                      EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.blueAccent.withAlpha(30)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "Token generated: $tokenGenetated, TPS: ${tps.toStringAsFixed(2)} token/s, duration: ${(tokenGenetated / (tps)).toInt()} sec",
+                        style: TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             Align(
               alignment: Alignment.topLeft,
