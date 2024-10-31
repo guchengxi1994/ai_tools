@@ -1,6 +1,9 @@
 use flutter_rust_bridge::frb;
 
-use crate::{frb_generated::StreamSink, llm::{ChatResponse, CHAT_RESPONSE_SINK}};
+use crate::{
+    frb_generated::StreamSink,
+    llm::{ChatResponse, CHAT_RESPONSE_SINK},
+};
 
 pub fn qwen2_chat(user_prompt: String, system_prompt: Option<String>, model_path: String) {
     let rt = tokio::runtime::Runtime::new().unwrap();
@@ -17,7 +20,7 @@ pub fn qwen2_chat(user_prompt: String, system_prompt: Option<String>, model_path
 }
 
 #[frb(sync)]
-pub fn chat_response_stream(s:StreamSink<ChatResponse>) -> anyhow::Result<()>{
+pub fn chat_response_stream(s: StreamSink<ChatResponse>) -> anyhow::Result<()> {
     let mut stream = CHAT_RESPONSE_SINK.write().unwrap();
     *stream = Some(s);
     anyhow::Ok(())

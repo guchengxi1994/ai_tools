@@ -2,9 +2,9 @@ use candle_core::{Device, Tensor};
 use candle_transformers::generation::LogitsProcessor;
 use tokenizers::Tokenizer;
 
-use crate::llm::ChatResponse;
-
+use super::CHAT_RESPONSE_SINK;
 use super::{model::ModelRun, token_output_stream::TokenOutputStream};
+use crate::llm::ChatResponse;
 
 pub struct TextGeneration<T> {
     pub model: T,
@@ -95,7 +95,7 @@ where
             if let Some(t) = self.tokenizer.next_token(next_token)? {
                 print!("{t}");
                 chat_response.set_content(t);
-                if let Some(s) = CHAT_RESPONSE_SINK.read().unwrap().as_ref(){
+                if let Some(s) = CHAT_RESPONSE_SINK.read().unwrap().as_ref() {
                     let _ = s.add(chat_response.clone());
                 }
 
@@ -111,6 +111,16 @@ where
             "\n{generated_tokens} tokens generated ({:.2} token/s)",
             generated_tokens as f64 / dt.as_secs_f64(),
         );
+
+        chat_response.set_content("".to_string());
+        chat_response.set_done(true);
+        chat_response.set_tps(generated_tokens as f64 / dt.as_secs_f64());
+        chat_response.set_stage("done".to_string());
+        chat_response.set_token_generated(generated_tokens);
+        if let Some(s) = CHAT_RESPONSE_SINK.read().unwrap().as_ref() {
+            let _ = s.add(chat_response.clone());
+        }
+
         Ok(())
     }
 }

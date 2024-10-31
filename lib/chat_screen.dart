@@ -16,17 +16,17 @@ class ChatScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
-  // final responseStream = chatResponseStream();
+  final responseStream = chatResponseStream();
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   responseStream.listen((event) {
-  //     ref
-  //         .read(messageProvider.notifier)
-  //         .updateMessageBox(ChatResponse.fromRustChatResponse(event));
-  //   });
-  // }
+  @override
+  void initState() {
+    super.initState();
+    responseStream.listen((event) {
+      ref
+          .read(messageProvider.notifier)
+          .updateMessageBox(ChatResponse.fromRustChatResponse(event));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -34,7 +34,7 @@ class ResponseMessageBox extends MessageBox {
             borderRadius: const BorderRadius.all(Radius.circular(10))),
         child: Column(
           children: [
-            if (stage != "" && stage != "回答结束")
+            if (stage != "" && stage != "done")
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [

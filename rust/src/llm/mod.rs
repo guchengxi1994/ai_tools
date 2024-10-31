@@ -17,6 +17,8 @@ pub struct ChatResponse {
     pub done: bool,
     pub stage: String,
     pub uuid: String,
+    pub tps: f64,
+    pub token_generated: usize,
 }
 
 impl ChatResponse {
@@ -28,6 +30,8 @@ impl ChatResponse {
             done: false,
             stage: "".to_string(),
             uuid: id.to_string(),
+            tps: 0.0,
+            token_generated: 0,
         }
     }
 
@@ -45,6 +49,14 @@ impl ChatResponse {
 
     pub fn set_uuid(&mut self, uuid: String) {
         self.uuid = uuid;
+    }
+
+    pub fn set_tps(&mut self, tps: f64) {
+        self.tps = tps;
+    }
+
+    pub fn set_token_generated(&mut self, token_generated: usize) {
+        self.token_generated = token_generated;
     }
 }
 

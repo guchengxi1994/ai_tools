@@ -10,5 +10,17 @@
             "type": "classification",
             "available-download-url": "https://cdn-lfs-us-1.hf.co/repos/56/5f/565fceebdc886b7c9db2c38d2df3e5d6377bb0bdb16c792f9b8c4968097fceaa/23a506615af848e4f668b3aa7a281a0543a3b36f376711c6d5cf0b637868cc5c?response-content-disposition=attachment%3B+filename*%3DUTF-8%27%27efficientnet-lite4-s.onnx%3B+filename%3D%22efficientnet-lite4-s.onnx%22%3B&Expires=1730356744&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTczMDM1Njc0NH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2RuLWxmcy11cy0xLmhmLmNvL3JlcG9zLzU2LzVmLzU2NWZjZWViZGM4ODZiN2M5ZGIyYzM4ZDJkZjNlNWQ2Mzc3YmIwYmRiMTZjNzkyZjliOGM0OTY4MDk3ZmNlYWEvMjNhNTA2NjE1YWY4NDhlNGY2NjhiM2FhN2EyODFhMDU0M2EzYjM2ZjM3NjcxMWM2ZDVjZjBiNjM3ODY4Y2M1Yz9yZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPSoifV19&Signature=a1CS%7El9PpNoGYI8EbPeQqn%7EABypjojeYIjvTPwbd%7EtO6Iy5r8MwBLibY-bw5octBRG47bqyaSRMEzynFvzsHzaEhFaQ4e6B0745sU4tfw6UkwLlx-J4dGFtLuWPu0gHdZm5HXkhJ7RaNVU2oAuNdz6k63VLvwjBa98M23KLfsHVJz2kyKhPzcyN4bdCstie91ui7rRWch-WLNDpgMW-bIvkESdyGjqfawKeLZxjBVSWoMjzTw6fgjHp3%7EZmvYatdVIH5%7EtUeeYWfK8vif3VEs0YfjsGUVW-44oOADJ93BfVNhxgQnEnzSxFfO79IGyBQDVu9oxhJmaYK8ZR7HgLmUw__&Key-Pair-Id=K24J24Z295AEI9"
         }
+    ],
+    "llm": [
+        {
+            "name": "qwen2.5-0.5B",
+            "type": "Instruct",
+            "local-path": "D:/github_repo/ai_tools/rust/assets/Qwen2___5-0___5B-Instruct"
+        },
+        {
+            "name": "qwen2-0.5B",
+            "type": "Instruct",
+            "local-path": "D:/github_repo/ai_tools/rust/assets/Qwen2-0___5B-Instruct"
+        }
     ]
 }

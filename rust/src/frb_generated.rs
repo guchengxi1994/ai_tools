@@ -267,12 +267,23 @@ impl SseDecode for crate::llm::ChatResponse {
         let mut var_done = <bool>::sse_decode(deserializer);
         let mut var_stage = <String>::sse_decode(deserializer);
         let mut var_uuid = <String>::sse_decode(deserializer);
+        let mut var_tps = <f64>::sse_decode(deserializer);
+        let mut var_tokenGenerated = <usize>::sse_decode(deserializer);
         return crate::llm::ChatResponse {
             content: var_content,
             done: var_done,
             stage: var_stage,
             uuid: var_uuid,
+            tps: var_tps,
+            token_generated: var_tokenGenerated,
         };
+    }
+}
+
+impl SseDecode for f64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_f64::<NativeEndian>().unwrap()
     }
 }
 
@@ -334,6 +345,13 @@ impl SseDecode for () {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {}
 }
 
+impl SseDecode for usize {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_u64::<NativeEndian>().unwrap() as _
+    }
+}
+
 impl SseDecode for i32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -381,6 +399,8 @@ impl flutter_rust_bridge::IntoDart for crate::llm::ChatResponse {
             self.done.into_into_dart().into_dart(),
             self.stage.into_into_dart().into_dart(),
             self.uuid.into_into_dart().into_dart(),
+            self.tps.into_into_dart().into_dart(),
+            self.token_generated.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -429,6 +449,15 @@ impl SseEncode for crate::llm::ChatResponse {
         <bool>::sse_encode(self.done, serializer);
         <String>::sse_encode(self.stage, serializer);
         <String>::sse_encode(self.uuid, serializer);
+        <f64>::sse_encode(self.tps, serializer);
+        <usize>::sse_encode(self.token_generated, serializer);
+    }
+}
+
+impl SseEncode for f64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_f64::<NativeEndian>(self).unwrap();
     }
 }
 
@@ -482,6 +511,16 @@ impl SseEncode for u8 {
 impl SseEncode for () {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {}
+}
+
+impl SseEncode for usize {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer
+            .cursor
+            .write_u64::<NativeEndian>(self as _)
+            .unwrap();
+    }
 }
 
 impl SseEncode for i32 {

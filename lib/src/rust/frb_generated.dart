@@ -262,14 +262,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ChatResponse dco_decode_chat_response(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 4)
-      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
     return ChatResponse(
       content: dco_decode_String(arr[0]),
       done: dco_decode_bool(arr[1]),
       stage: dco_decode_String(arr[2]),
       uuid: dco_decode_String(arr[3]),
+      tps: dco_decode_f_64(arr[4]),
+      tokenGenerated: dco_decode_usize(arr[5]),
     );
+  }
+
+  @protected
+  double dco_decode_f_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as double;
   }
 
   @protected
@@ -309,6 +317,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BigInt dco_decode_usize(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeU64(raw);
+  }
+
+  @protected
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_String(deserializer);
@@ -342,8 +356,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_done = sse_decode_bool(deserializer);
     var var_stage = sse_decode_String(deserializer);
     var var_uuid = sse_decode_String(deserializer);
+    var var_tps = sse_decode_f_64(deserializer);
+    var var_tokenGenerated = sse_decode_usize(deserializer);
     return ChatResponse(
-        content: var_content, done: var_done, stage: var_stage, uuid: var_uuid);
+        content: var_content,
+        done: var_done,
+        stage: var_stage,
+        uuid: var_uuid,
+        tps: var_tps,
+        tokenGenerated: var_tokenGenerated);
+  }
+
+  @protected
+  double sse_decode_f_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getFloat64();
   }
 
   @protected
@@ -399,6 +426,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BigInt sse_decode_usize(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getBigUint64();
+  }
+
+  @protected
   int sse_decode_i_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getInt32();
@@ -443,6 +476,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self.done, serializer);
     sse_encode_String(self.stage, serializer);
     sse_encode_String(self.uuid, serializer);
+    sse_encode_f_64(self.tps, serializer);
+    sse_encode_usize(self.tokenGenerated, serializer);
+  }
+
+  @protected
+  void sse_encode_f_64(double self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putFloat64(self);
   }
 
   @protected
@@ -492,6 +533,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_encode_unit(void self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
+  }
+
+  @protected
+  void sse_encode_usize(BigInt self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putBigUint64(self);
   }
 
   @protected

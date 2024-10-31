@@ -51,7 +51,7 @@ class MessageNotifier extends AutoDisposeNotifier<MessageState> {
       }
       state = MessageState(
         messageBox: l..add(box),
-        isLoading: state.isLoading,
+        isLoading: !(response.done ?? false),
       );
     } else {
       final l = List<MessageBox>.from(state.messageBox)
@@ -60,7 +60,7 @@ class MessageNotifier extends AutoDisposeNotifier<MessageState> {
             id: response.uuid!,
             stage: response.stage ?? ""));
       state = MessageState(
-        isLoading: state.isLoading,
+        isLoading: !(response.done ?? false),
         messageBox: l,
       );
     }

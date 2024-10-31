@@ -11,17 +11,26 @@ class ChatResponse {
   final bool done;
   final String stage;
   final String uuid;
+  final double tps;
+  final BigInt tokenGenerated;
 
   const ChatResponse({
     required this.content,
     required this.done,
     required this.stage,
     required this.uuid,
+    required this.tps,
+    required this.tokenGenerated,
   });
 
   @override
   int get hashCode =>
-      content.hashCode ^ done.hashCode ^ stage.hashCode ^ uuid.hashCode;
+      content.hashCode ^
+      done.hashCode ^
+      stage.hashCode ^
+      uuid.hashCode ^
+      tps.hashCode ^
+      tokenGenerated.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -31,5 +40,7 @@ class ChatResponse {
           content == other.content &&
           done == other.done &&
           stage == other.stage &&
-          uuid == other.uuid;
+          uuid == other.uuid &&
+          tps == other.tps &&
+          tokenGenerated == other.tokenGenerated;
 }
