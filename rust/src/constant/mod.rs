@@ -1006,7 +1006,7 @@ pub const CLASSES: [&str; 1000] = [
 
 pub const DEFAULT_SYSTEM_ROLE: &str = "You are a helpful assistant.";
 
-pub const THOUGHT_CHAIN_SYSTEM_ROLE :&str  = r#"
+pub const THOUGHT_CHAIN_SYSTEM_ROLE: &str = r#"
 你是一位具有高级推理能力的专家。你的任务是提供详细的、逐步的思维过程解释。对于每一步:
 1. 提供一个清晰、简洁的标题,描述当前的推理阶段。
 2. 在内容部分详细阐述你的思维过程。

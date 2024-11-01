@@ -1488,4 +1488,58 @@ mod tests {
 
         anyhow::Ok(())
     }
+
+    #[test]
+    fn rwkv_test() -> anyhow::Result<()> {
+        // let device = Device::Cpu;
+
+        let device = candle_core::Device::cuda_if_available(0)?;
+        println!("[rust-llm] run on device: {:?}", device);
+
+        let mut model: crate::llm::model::Model<
+            candle_transformers::models::quantized_rwkv_v6::Model,
+        > = crate::llm::model::Model::<candle_transformers::models::quantized_rwkv_v6::Model>::new(
+            "assets/rwkv_v6".to_string(),
+        );
+        crate::llm::model::ModelRun::load(&mut model)?;
+
+        let tokenizer = candle_transformers::models::rwkv_v5::Tokenizer::new(
+            model.tokenizer_path.clone().unwrap(),
+        )?;
+
+        let mut pipeline = crate::llm::text_generation::TextGeneration::<
+            crate::llm::model::Model<candle_transformers::models::quantized_rwkv_v6::Model>,
+            &mut candle_transformers::models::rwkv_v5::State,
+            candle_transformers::models::rwkv_v5::Tokenizer,
+        >::new(
+            model,
+            tokenizer,
+            128,
+            Some(0.7),
+            Some(0.9),
+            1.25,
+            64,
+            &device,
+        );
+
+        let start = std::time::Instant::now();
+
+        let prompt = format!(
+            "
+        User: 你好
+
+        Assistant: 你好。我是你的助手，我将提供专家的完整详细答复。
+
+        User: {}
+
+        Assistant:
+        ",
+            "请解释机器学习的基本概念。答案请用中文。"
+        );
+
+        pipeline.run(&prompt, 1024)?;
+
+        println!("end in {:?}", start.elapsed());
+        anyhow::Ok(())
+    }
 }

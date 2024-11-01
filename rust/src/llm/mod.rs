@@ -2,10 +2,14 @@ use std::sync::RwLock;
 
 use uuid::Uuid;
 
-use crate::{constant::{DEFAULT_SYSTEM_ROLE, THOUGHT_CHAIN_SYSTEM_ROLE}, frb_generated::StreamSink};
+use crate::{
+    constant::{DEFAULT_SYSTEM_ROLE, THOUGHT_CHAIN_SYSTEM_ROLE},
+    frb_generated::StreamSink,
+};
 
 pub mod model;
 pub mod qwen2;
+pub mod rwkv;
 pub mod text_generation;
 pub mod token_output_stream;
 
@@ -103,7 +107,10 @@ impl ChatMessages {
 
     pub fn format_with_thought_chain(&self) -> String {
         let mut result = String::new();
-        result += &format!("<|im_start|>system\n{}\n<|im_end|>\n", THOUGHT_CHAIN_SYSTEM_ROLE);
+        result += &format!(
+            "<|im_start|>system\n{}\n<|im_end|>\n",
+            THOUGHT_CHAIN_SYSTEM_ROLE
+        );
 
         for message in self.0.iter() {
             result += &format!(
