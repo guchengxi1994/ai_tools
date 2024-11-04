@@ -4,3 +4,5 @@ cargo test  --package rust_lib_ai_tools --lib --tests ::mlp_test::mlp_test::m_te
 cargo test  --package rust_lib_ai_tools --lib --tests ::tests::qwen_test -- --nocapture
 
 cargo test  --package rust_lib_ai_tools --lib --tests ::tests::rwkv_test -- --nocapture
+
+cargo test --release --package rust_lib_ai_tools --lib -- web_server::test::test_server -- --nocapture

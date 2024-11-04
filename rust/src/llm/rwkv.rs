@@ -85,6 +85,7 @@ where
             repeat_last_n,
             device: device.clone(),
             _marker: PhantomData, // 初始化 PhantomData
+            callback: None,
         }
     }
 

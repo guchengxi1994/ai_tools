@@ -5,6 +5,10 @@ use crate::{
     llm::{ChatMessages, ChatResponse, CHAT_RESPONSE_SINK},
 };
 
+pub fn clear_all_models() {
+    crate::llm::clear_all_models();
+}
+
 pub fn qwen2_chat(user_prompt: String, system_prompt: Option<String>, model_path: String) {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let r = rt.block_on(async {

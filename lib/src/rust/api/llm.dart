@@ -7,6 +7,9 @@ import '../frb_generated.dart';
 import '../llm.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+Future<void> clearAllModels() =>
+    RustLib.instance.api.crateApiLlmClearAllModels();
+
 Future<void> qwen2Chat(
         {required String userPrompt,
         String? systemPrompt,

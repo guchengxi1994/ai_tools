@@ -7,8 +7,10 @@ use candle_nn::VarBuilder;
 use candle_transformers::generation::LogitsProcessor;
 use candle_transformers::models::qwen2::Config as Qwen2Config;
 use candle_transformers::models::qwen2::ModelForCausalLM;
+use futures::future::BoxFuture;
 use once_cell::sync::Lazy;
 use tokenizers::Tokenizer;
+use tokio::sync::mpsc::Sender;
 
 use crate::constant::DEFAULT_SYSTEM_ROLE;
 use crate::llm::ChatResponse;
@@ -25,6 +27,13 @@ pub static QWEN_MODEL: Lazy<
         >,
     >,
 > = Lazy::new(|| RwLock::new(None));
+
+pub fn clear_all_models() {
+    {
+        let mut qwen_model = QWEN_MODEL.write().unwrap();
+        *qwen_model = None;
+    }
+}
 
 use super::{model::Model, text_generation::TextGeneration, BASE_TEMPLATE};
 
@@ -83,6 +92,15 @@ impl<T> TextGeneration<T, usize, TokenOutputStream>
 where
     T: ModelRun<usize>,
 {
+    pub fn set_callback(
+        &mut self,
+        callback: Option<
+            Box<dyn Fn(String, Sender<String>) -> BoxFuture<'static, ()> + Send + Sync>,
+        >,
+    ) {
+        self.callback = callback;
+    }
+
     pub fn new(
         model: T,
         tokenizer: TokenOutputStream,
@@ -92,6 +110,9 @@ where
         repeat_penalty: f32,
         repeat_last_n: usize,
         device: &Device,
+        callback: Option<
+            Box<dyn Fn(String, Sender<String>) -> BoxFuture<'static, ()> + Send + Sync>,
+        >,
     ) -> Self {
         let logits_processor = LogitsProcessor::new(seed, temp, top_p);
         Self {
@@ -102,10 +123,16 @@ where
             repeat_last_n,
             device: device.clone(),
             _marker: PhantomData, // 初始化 PhantomData
+            callback,
         }
     }
 
-    pub fn run(&mut self, prompt: &str, sample_len: usize) -> anyhow::Result<()> {
+    pub fn run(
+        &mut self,
+        prompt: &str,
+        sample_len: usize,
+        tx: Option<Sender<String>>,
+    ) -> anyhow::Result<()> {
         use std::io::Write;
         self.tokenizer.clear();
         self.model.clear_kv_cache();
@@ -159,9 +186,13 @@ where
             }
             if let Some(t) = self.tokenizer.next_token(next_token)? {
                 print!("{t}");
-                chat_response.set_content(t);
-                if let Some(s) = CHAT_RESPONSE_SINK.read().unwrap().as_ref() {
-                    let _ = s.add(chat_response.clone());
+                if self.callback.is_some() {
+                    let _ = (self.callback.as_ref().unwrap())(t.to_string(), tx.clone().unwrap());
+                } else {
+                    chat_response.set_content(t);
+                    if let Some(s) = CHAT_RESPONSE_SINK.read().unwrap().as_ref() {
+                        let _ = s.add(chat_response.clone());
+                    }
                 }
 
                 std::io::stdout().flush()?;
@@ -177,15 +208,16 @@ where
             generated_tokens as f64 / dt.as_secs_f64(),
         );
 
-        chat_response.set_content("".to_string());
-        chat_response.set_done(true);
-        chat_response.set_tps(generated_tokens as f64 / dt.as_secs_f64());
-        chat_response.set_stage("done".to_string());
-        chat_response.set_token_generated(generated_tokens);
-        if let Some(s) = CHAT_RESPONSE_SINK.read().unwrap().as_ref() {
-            let _ = s.add(chat_response.clone());
+        if !self.callback.is_some() {
+            chat_response.set_content("".to_string());
+            chat_response.set_done(true);
+            chat_response.set_tps(generated_tokens as f64 / dt.as_secs_f64());
+            chat_response.set_stage("done".to_string());
+            chat_response.set_token_generated(generated_tokens);
+            if let Some(s) = CHAT_RESPONSE_SINK.read().unwrap().as_ref() {
+                let _ = s.add(chat_response.clone());
+            }
         }
-
         Ok(())
     }
 }
@@ -197,7 +229,7 @@ pub fn qwen2_prompt_chat(p: String, model_path: String) -> anyhow::Result<()> {
         if !global_model.is_none() {
             println!("[rust-llm] use global model");
             let start = std::time::Instant::now();
-            global_model.as_mut().unwrap().run(&p, 1024)?;
+            global_model.as_mut().unwrap().run(&p, 1024, None)?;
             println!("end in {:?}", start.elapsed());
             return Ok(());
         }
@@ -225,11 +257,12 @@ pub fn qwen2_prompt_chat(p: String, model_path: String) -> anyhow::Result<()> {
         1.25,
         64,
         &device,
+        None,
     );
 
     let start = std::time::Instant::now();
 
-    pipeline.run(&p, 1024)?;
+    pipeline.run(&p, 1024, None)?;
 
     {
         let mut global_model = QWEN_MODEL.write().unwrap();
@@ -238,7 +271,6 @@ pub fn qwen2_prompt_chat(p: String, model_path: String) -> anyhow::Result<()> {
     println!("end in {:?}", start.elapsed());
     anyhow::Ok(())
 }
-
 
 /// expose to flutter
 pub fn qwen2_chat(
@@ -264,7 +296,7 @@ pub fn qwen2_chat(
         if !global_model.is_none() {
             println!("[rust-llm] use global model");
             let start = std::time::Instant::now();
-            global_model.as_mut().unwrap().run(&prompt, 1024)?;
+            global_model.as_mut().unwrap().run(&prompt, 1024, None)?;
             println!("end in {:?}", start.elapsed());
             return Ok(());
         }
@@ -292,11 +324,12 @@ pub fn qwen2_chat(
         1.25,
         64,
         &device,
+        None,
     );
 
     let start = std::time::Instant::now();
 
-    pipeline.run(&prompt, 1024)?;
+    pipeline.run(&prompt, 1024, None)?;
 
     {
         let mut global_model = QWEN_MODEL.write().unwrap();

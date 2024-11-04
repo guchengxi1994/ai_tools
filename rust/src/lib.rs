@@ -5,3 +5,4 @@ mod frb_generated;
 mod llm;
 mod tests;
 mod utils;
+mod web_server;

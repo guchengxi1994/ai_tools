@@ -123,3 +123,7 @@ impl ChatMessages {
         result
     }
 }
+
+pub fn clear_all_models() {
+    qwen2::clear_all_models();
+}
