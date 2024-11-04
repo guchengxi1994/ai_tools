@@ -13,6 +13,4 @@ pub struct TextGeneration<T, S, TK> {
     pub repeat_penalty: f32,
     pub repeat_last_n: usize,
     pub _marker: PhantomData<S>, // 添加 PhantomData<S> 以使用 S
-    pub callback:
-        Option<Box<dyn Fn(String, Sender<String>) -> BoxFuture<'static, ()> + Send + Sync>>,
 }

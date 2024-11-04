@@ -36,26 +36,6 @@ pub async fn sse(req: web::Json<CompletionRequest>) -> HttpResponse {
 
     let _ = tx.send("data: start\n\n".to_string()).await;
 
-    {
-        let mut global_model = QWEN_MODEL.write().unwrap();
-
-        global_model
-            .as_mut()
-            .unwrap()
-            .set_callback(Some(Box::new(|t, tx| {
-                info!("callback: {}", t);
-                async move {
-                    let e = tx.send(t).await;
-                    if e.is_err() {
-                        error!("[rust-llm] Error1: {:?}", e);
-                    } else {
-                        info!("[rust-llm] callback success")
-                    }
-                }
-                .boxed()
-            })));
-    }
-
     let notify = Notify::new();
 
     tokio::spawn({
@@ -78,27 +58,27 @@ pub async fn sse(req: web::Json<CompletionRequest>) -> HttpResponse {
         }
     });
 
-    // tokio::spawn({
-    //     let tx_clone = tx.clone();
+    tokio::spawn({
+        let tx_clone = tx.clone();
 
-    //     async move {
-    //         {
-    //             let p = BASE_TEMPLATE.replace("{user}", &req.prompt);
+        async move {
+            {
+                let p = BASE_TEMPLATE.replace("{user}", &req.prompt);
 
-    //             let mut global_model = QWEN_MODEL.write().unwrap();
-    //             let r = global_model
-    //                 .as_mut()
-    //                 .unwrap()
-    //                 .run(&p, 1024, Some(tx_clone.clone()));
-    //             match r {
-    //                 Ok(_) => {}
-    //                 Err(e) => {
-    //                     error!("[rust-llm] Error: {}", e);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // });
+                let mut global_model = QWEN_MODEL.write().unwrap();
+                let r = global_model
+                    .as_mut()
+                    .unwrap()
+                    .run_in_actix(&p, 1024, tx_clone.clone()).await;
+                match r {
+                    Ok(_) => {}
+                    Err(e) => {
+                        error!("[rust-llm] Error: {}", e);
+                    }
+                }
+            }
+        }
+    });
 
     return HttpResponse::Ok()
         .content_type("text/event-stream")
