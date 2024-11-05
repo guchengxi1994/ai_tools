@@ -124,6 +124,6 @@ impl ChatMessages {
     }
 }
 
-pub fn clear_all_models() {
-    qwen2::clear_all_models();
+pub async fn clear_all_models_async() {
+    qwen2::clear_all_models_async().await;
 }

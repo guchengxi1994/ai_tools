@@ -18,6 +18,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final responseStream = chatResponseStream();
+  final stateStream = serverStateStream();
 
   @override
   void initState() {
@@ -26,6 +27,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ref
           .read(messageProvider.notifier)
           .updateMessageBox(ChatResponse.fromRustChatResponse(event));
+    });
+    stateStream.listen((event) {
+      if (event == "init") {
+        ref
+            .read(messageProvider.notifier)
+            .changeServerState(ServerState.loading);
+      } else if (event == "model loaded") {
+        ref
+            .read(messageProvider.notifier)
+            .changeServerState(ServerState.running);
+      } else {
+        ref.read(messageProvider.notifier).changeServerState(ServerState.none);
+      }
     });
   }
 
@@ -90,6 +104,27 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ref.read(messageProvider.notifier).updateWithHistory(value);
                   },
                 ),
+                Spacer(),
+                IconButton(
+                    onPressed: () {
+                      if (state.serverState == ServerState.running) {
+                        ref.read(messageProvider.notifier).stopserver();
+                      } else if (state.serverState == ServerState.none) {
+                        ref.read(messageProvider.notifier).runserver();
+                      }
+                    },
+                    icon: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(40),
+                          color: Colors.blueAccent.shade100),
+                      width: 30,
+                      height: 30,
+                      child: state.serverState == ServerState.running
+                          ? Icon(Icons.stop)
+                          : state.serverState == ServerState.loading
+                              ? Icon(Icons.hourglass_empty)
+                              : Icon(Icons.play_arrow),
+                    ))
               ],
             ),
           ),

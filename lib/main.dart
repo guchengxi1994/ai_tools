@@ -8,9 +8,12 @@ import 'package:toastification/toastification.dart';
 // ignore: depend_on_referenced_packages
 import 'package:logging/logging.dart';
 
+import 'src/rust/api/simple.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await RustLib.init();
+  await initLogger();
   Logger.root.level = Level.ALL; // defaults to Level.INFO
   Logger.root.onRecord.listen((record) {
     if (kDebugMode) {

@@ -16,6 +16,33 @@ class MessageNotifier extends AutoDisposeNotifier<MessageState> {
   final ScrollController scrollController = ScrollController();
   final IsarDatabase database = IsarDatabase();
 
+  changeServerState(ServerState s) {
+    if (s == state.serverState) {
+      return;
+    }
+
+    state = state.copyWith(serverState: s);
+  }
+
+  void runserver() {
+    if (state.serverState == ServerState.running ||
+        state.serverState == ServerState.loading) {
+      return;
+    }
+
+    runServer(
+        modelPath:
+            r"D:\github_repo\ai_tools\rust\assets\Qwen2___5-0___5B-Instruct");
+  }
+
+  void stopserver() {
+    if (state.serverState != ServerState.running) {
+      return;
+    }
+
+    stopServer();
+  }
+
   @override
   MessageState build() {
     return MessageState();
@@ -71,10 +98,7 @@ class MessageNotifier extends AutoDisposeNotifier<MessageState> {
 
     final String prompt = formatPromptWithHistory(list);
     logger.info("prompt: $prompt");
-    qwen2PromptChat(
-        prompt: prompt,
-        modelPath:
-            r"D:\github_repo\ai_tools\rust\assets\Qwen2___5-0___5B-Instruct");
+    qwen2PromptChat(prompt: prompt);
   }
 
   saveHistory(String content, ChatRole role) async {

@@ -8,3 +8,9 @@ pub struct CompletionRequest {
 pub struct CompletionResponse {
     pub text: String,
 }
+
+impl CompletionResponse {
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(self).unwrap()
+    }
+}

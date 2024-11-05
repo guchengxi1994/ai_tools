@@ -7,7 +7,6 @@ use candle_nn::VarBuilder;
 use candle_transformers::generation::LogitsProcessor;
 use candle_transformers::models::qwen2::Config as Qwen2Config;
 use candle_transformers::models::qwen2::ModelForCausalLM;
-use futures::future::BoxFuture;
 use once_cell::sync::Lazy;
 use tokenizers::Tokenizer;
 use tokio::sync::mpsc::Sender;
@@ -16,6 +15,7 @@ use crate::constant::DEFAULT_SYSTEM_ROLE;
 use crate::llm::ChatResponse;
 use crate::llm::CHAT_RESPONSE_SINK;
 
+#[deprecated = "use `TOKIO_QWEN_MODEL` instead"]
 pub static QWEN_MODEL: Lazy<
     RwLock<
         Option<
@@ -28,9 +28,29 @@ pub static QWEN_MODEL: Lazy<
     >,
 > = Lazy::new(|| RwLock::new(None));
 
+pub static TOKIO_QWEN_MODEL: Lazy<
+    tokio::sync::RwLock<
+        Option<
+            TextGeneration<
+                Model<ModelForCausalLM>,
+                usize,
+                crate::llm::token_output_stream::TokenOutputStream,
+            >,
+        >,
+    >,
+> = Lazy::new(|| tokio::sync::RwLock::new(None));
+
+#[deprecated = "use `clear_all_models_async` instead"]
 pub fn clear_all_models() {
     {
         let mut qwen_model = QWEN_MODEL.write().unwrap();
+        *qwen_model = None;
+    }
+}
+
+pub async fn clear_all_models_async() {
+    {
+        let mut qwen_model = TOKIO_QWEN_MODEL.write().await;
         *qwen_model = None;
     }
 }
@@ -256,8 +276,10 @@ where
             }
             if let Some(t) = self.tokenizer.next_token(next_token)? {
                 print!("{t}");
+                let c = crate::web_server::models::CompletionResponse { text: t };
+
                 std::io::stdout().flush()?;
-                tx.send(t).await.unwrap();
+                tx.send(format!("data: {}", c.to_json())).await.unwrap();
             }
         }
         let dt = start_gen.elapsed();
@@ -275,6 +297,7 @@ where
 }
 
 /// expose to flutter
+#[deprecated = "use `qwen2_prompt_chat_async` instead"]
 pub fn qwen2_prompt_chat(p: String, model_path: String) -> anyhow::Result<()> {
     {
         let mut global_model = QWEN_MODEL.write().unwrap();
@@ -320,6 +343,29 @@ pub fn qwen2_prompt_chat(p: String, model_path: String) -> anyhow::Result<()> {
         *global_model = Some(pipeline);
     }
     println!("end in {:?}", start.elapsed());
+    anyhow::Ok(())
+}
+
+
+// expose to flutter
+pub async fn qwen2_prompt_chat_async(p: String) -> anyhow::Result<()> {
+    {
+        let mut global_model = TOKIO_QWEN_MODEL.write().await;
+        if !global_model.is_none() {
+            println!("[rust-llm] use global model");
+            let start = std::time::Instant::now();
+            global_model.as_mut().unwrap().run(&p, 1024)?;
+            println!("end in {:?}", start.elapsed());
+            return Ok(());
+        }
+    }
+    let mut chat_response = ChatResponse::new();
+    chat_response.set_content("model not loaded".to_string());
+    chat_response.set_done(true);
+    chat_response.set_stage("done".to_string());
+    if let Some(s) = CHAT_RESPONSE_SINK.read().unwrap().as_ref() {
+        let _ = s.add(chat_response.clone());
+    }
     anyhow::Ok(())
 }
 

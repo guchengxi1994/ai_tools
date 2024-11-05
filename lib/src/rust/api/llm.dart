@@ -19,13 +19,14 @@ Future<void> qwen2Chat(
         systemPrompt: systemPrompt,
         modelPath: modelPath);
 
-Future<void> qwen2PromptChat(
-        {required String prompt, required String modelPath}) =>
-    RustLib.instance.api
-        .crateApiLlmQwen2PromptChat(prompt: prompt, modelPath: modelPath);
+Future<void> qwen2PromptChat({required String prompt}) =>
+    RustLib.instance.api.crateApiLlmQwen2PromptChat(prompt: prompt);
 
 Stream<ChatResponse> chatResponseStream() =>
     RustLib.instance.api.crateApiLlmChatResponseStream();
+
+Stream<String> serverStateStream() =>
+    RustLib.instance.api.crateApiLlmServerStateStream();
 
 String formatPrompt({required ChatMessages messages, String? system}) =>
     RustLib.instance.api
@@ -34,3 +35,8 @@ String formatPrompt({required ChatMessages messages, String? system}) =>
 String formatPromptWithThoughtChain({required ChatMessages messages}) =>
     RustLib.instance.api
         .crateApiLlmFormatPromptWithThoughtChain(messages: messages);
+
+Future<void> runServer({String? modelPath, BigInt? port}) =>
+    RustLib.instance.api.crateApiLlmRunServer(modelPath: modelPath, port: port);
+
+Future<void> stopServer() => RustLib.instance.api.crateApiLlmStopServer();
