@@ -1,5 +1,6 @@
 import 'package:ai_tools/llm/messagebox/chat_response.dart';
 import 'package:ai_tools/src/rust/api/llm.dart';
+import 'package:ai_tools/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,14 +31,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
     stateStream.listen((event) {
       if (event == "init") {
+        ToastUtils.info(null, title: "model loading");
         ref
             .read(messageProvider.notifier)
             .changeServerState(ServerState.loading);
       } else if (event == "model loaded") {
+        ToastUtils.info(null, title: "server ready");
         ref
             .read(messageProvider.notifier)
             .changeServerState(ServerState.running);
       } else {
+        ToastUtils.info(null, title: "server stopped");
         ref.read(messageProvider.notifier).changeServerState(ServerState.none);
       }
     });
@@ -54,8 +58,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           height: 50,
           child: Center(
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
+                Spacer(),
                 Container(
                   padding:
                       EdgeInsets.only(left: 30, right: 30, top: 5, bottom: 5),

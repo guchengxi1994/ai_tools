@@ -2,7 +2,8 @@ use flutter_rust_bridge::frb;
 
 use crate::{
     frb_generated::StreamSink,
-    llm::{ChatMessages, ChatResponse, CHAT_RESPONSE_SINK}, web_server::SERVER_STATE_SINK,
+    llm::{ChatMessages, ChatResponse, CHAT_RESPONSE_SINK},
+    web_server::SERVER_STATE_SINK,
 };
 
 pub fn clear_all_models() {
@@ -31,9 +32,7 @@ pub fn qwen2_chat(user_prompt: String, system_prompt: Option<String>, model_path
 #[deprecated]
 pub fn qwen2_prompt_chat(prompt: String) {
     let rt = tokio::runtime::Runtime::new().unwrap();
-    let r = rt.block_on(async {
-        crate::llm::qwen2::qwen2_prompt_chat_async(prompt).await
-    });
+    let r = rt.block_on(async { crate::llm::qwen2::qwen2_prompt_chat_async(prompt).await });
     match r {
         Ok(_) => {}
         Err(_e) => {

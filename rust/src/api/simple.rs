@@ -9,7 +9,6 @@ pub fn init_app() {
     flutter_rust_bridge::setup_default_user_utils();
 }
 
-
-pub fn init_logger(){
+pub fn init_logger() {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 }

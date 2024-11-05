@@ -62,7 +62,7 @@ pub fn stop_server() {
     STOP_NOTIFY.notify_one();
     let rt = tokio::runtime::Runtime::new().unwrap();
     rt.block_on(async {
-       crate::llm::clear_all_models_async().await;
+        crate::llm::clear_all_models_async().await;
     });
 
     if let Some(s) = SERVER_STATE_SINK.read().unwrap().as_ref() {

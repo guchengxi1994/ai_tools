@@ -6,3 +6,5 @@ Qwen2-0___5B-Instruct/
 Qwen2-VL-2B-Instruct-GPTQ-Int4/
 *.csv
 rwkv_v6/
+*.pt
+*.safetensors

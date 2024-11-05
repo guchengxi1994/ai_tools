@@ -346,7 +346,6 @@ pub fn qwen2_prompt_chat(p: String, model_path: String) -> anyhow::Result<()> {
     anyhow::Ok(())
 }
 
-
 // expose to flutter
 pub async fn qwen2_prompt_chat_async(p: String) -> anyhow::Result<()> {
     {
