@@ -3,6 +3,7 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
+import '../cv/object_detect_result.dart';
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
@@ -12,3 +13,16 @@ Future<String> classifyImage(
         List<String>? classes}) =>
     RustLib.instance.api
         .crateApiCvClassifyImage(s: s, modelPath: modelPath, classes: classes);
+
+Future<void> yolov8Init({String? modelPath}) =>
+    RustLib.instance.api.crateApiCvYolov8Init(modelPath: modelPath);
+
+/// TODO
+/// remove yolo models in gpu
+Future<void> yolov8Cleanup() => RustLib.instance.api.crateApiCvYolov8Cleanup();
+
+Future<List<ObjectDetectResult>> yolov8Detect({required List<int> img}) =>
+    RustLib.instance.api.crateApiCvYolov8Detect(img: img);
+
+Stream<String> loadModelStateStream() =>
+    RustLib.instance.api.crateApiCvLoadModelStateStream();

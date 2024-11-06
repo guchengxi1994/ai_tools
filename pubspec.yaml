@@ -9,11 +9,14 @@ environment:
 
 
 dependencies:
+  animated_toggle_switch: ^0.8.3
+  desktop_drop: ^0.5.0
+  expand_widget: ^3.1.1
+  file_selector: ^1.0.3
   flutter:
     sdk: flutter
   flutter_riverpod: ^2.5.1
   flutter_rust_bridge: 2.5.1
-  file_selector: ^1.0.3
   isar: 
     version: 3.1.8
     hosted: https://pub.isar-community.dev/
@@ -22,12 +25,11 @@ dependencies:
     hosted: https://pub.isar-community.dev/
   json_annotation: ^4.9.0
   markdown_widget: ^2.3.2+6
+  path_provider: ^2.1.5
   riverpod: ^2.5.1
   rust_lib_ai_tools:
     path: rust_builder
   toastification: ^2.3.0
-  path_provider: ^2.1.5
-  animated_toggle_switch: ^0.8.3
   
 
 dev_dependencies:

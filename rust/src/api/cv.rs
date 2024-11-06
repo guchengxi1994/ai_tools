@@ -1,4 +1,8 @@
-use crate::utils::image_processor::ImageProcessor;
+use flutter_rust_bridge::frb;
+
+use crate::{
+    cv::LOAD_MODEL_STATE_SINK, frb_generated::StreamSink, utils::image_processor::ImageProcessor,
+};
 
 pub fn classify_image(s: String, model_path: String, classes: Option<Vec<String>>) -> String {
     let rt = tokio::runtime::Runtime::new().unwrap();
@@ -36,4 +40,30 @@ pub fn classify_image(s: String, model_path: String, classes: Option<Vec<String>
         Ok(_r) => _r.to_owned(),
         Err(_e) => format!("error  {:?}", _e),
     }
+}
+
+pub fn yolov8_init(model_path: Option<String>) {
+    let _ = crate::cv::yolov8::infer::init_yolov8_n(model_path);
+}
+
+/// TODO
+/// remove yolo models in gpu
+pub fn yolov8_cleanup() {}
+
+pub fn yolov8_detect(img: Vec<u8>) -> Vec<crate::cv::object_detect_result::ObjectDetectResult> {
+    let r = crate::cv::yolov8::infer::yolov8n_detect(img);
+    match r {
+        Ok(_r) => _r,
+        Err(_e) => {
+            println!("[rust yolov8n] error  {:?}", _e);
+            return vec![];
+        }
+    }
+}
+
+#[frb(sync)]
+pub fn load_model_state_stream(s: StreamSink<String>) -> anyhow::Result<()> {
+    let mut stream = LOAD_MODEL_STATE_SINK.write().unwrap();
+    *stream = Some(s);
+    anyhow::Ok(())
 }

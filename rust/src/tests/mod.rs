@@ -4,6 +4,8 @@ mod magika_test;
 mod mlp_test;
 #[macro_use]
 pub mod macros;
+mod reflection_pad2d;
+mod resnet_generator_test;
 
 #[allow(unused_imports, dead_code, unused_variables)]
 mod tests {

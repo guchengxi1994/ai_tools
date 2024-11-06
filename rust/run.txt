@@ -6,3 +6,6 @@ cargo test  --package rust_lib_ai_tools --lib --tests ::tests::qwen_test -- --no
 cargo test  --package rust_lib_ai_tools --lib --tests ::tests::rwkv_test -- --nocapture
 
 cargo test --release --package rust_lib_ai_tools --lib -- web_server::test::test_server -- --nocapture
+
+
+cargo test --package rust_lib_ai_tools --lib -- tests::reflection_pad2d::test::test_reflection_pad2d -- --nocapture

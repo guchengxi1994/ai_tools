@@ -1,3 +1,4 @@
+import 'package:ai_tools/cv/cv_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,9 +23,7 @@ class _AppState extends ConsumerState<App> {
           Expanded(
               child: PageView(
             controller: ref.read(sidebarProvider.notifier).pageController,
-            children: [
-              ChatScreen(),
-            ],
+            children: [ChatScreen(), CvScreen()],
           ))
         ],
       ),
