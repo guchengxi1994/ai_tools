@@ -6,6 +6,7 @@ mod mlp_test;
 pub mod macros;
 mod reflection_pad2d;
 mod resnet_generator_test;
+mod unet;
 
 #[allow(unused_imports, dead_code, unused_variables)]
 mod tests {
