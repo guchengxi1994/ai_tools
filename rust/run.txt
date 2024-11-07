@@ -1,5 +1,7 @@
 cargo test  --package rust_lib_ai_tools --lib --tests ::mlp_test::mlp_test::m_test -- --nocapture
 
+cargo test --release  --package rust_lib_ai_tools --lib --tests ::unet::train_unet -- --nocapture
+
 
 cargo test  --package rust_lib_ai_tools --lib --tests ::tests::qwen_test -- --nocapture
 

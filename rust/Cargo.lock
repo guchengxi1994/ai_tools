@@ -752,6 +752,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "candle_dataset_loader"
+version = "0.1.0"
+source = "git+https://github.com/guchengxi1994/candle_dataset_loader#5c5347784c0ab195e342ebaf5505ed27cb3ca1c6"
+dependencies = [
+ "candle-core",
+ "rand",
+]
+
+[[package]]
 name = "cargo-lock"
 version = "8.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2738,6 +2747,7 @@ dependencies = [
  "candle-nn",
  "candle-onnx",
  "candle-transformers",
+ "candle_dataset_loader",
  "csv",
  "env_logger 0.11.5",
  "flutter_rust_bridge",
@@ -3768,3 +3778,7 @@ checksum = "16099418600b4d8f028622f73ff6e3deaabdff330fb9a2a131dea781ee8b0768"
 dependencies = [
  "zune-core",
 ]
+
+[[patch.unused]]
+name = "candle_dataset_loader"
+version = "0.1.0"

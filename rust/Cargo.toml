@@ -17,6 +17,7 @@ candle-core = { version = "=0.7.2", features = ['cuda'] }
 candle-nn = { version = "=0.7.2", features = ['cuda'] }
 candle-onnx = { version = "=0.7.2" }
 candle-transformers = { version = "=0.7.2", features = ['cuda'] }
+candle_dataset_loader = {git = "https://github.com/guchengxi1994/candle_dataset_loader" }
 csv = "1.3.0"
 env_logger = "0.11.5"
 flutter_rust_bridge = "=2.5.1"
@@ -36,3 +37,6 @@ uuid = { features = ["v4"], version = "1.11.0"}
 
 [workspace]
 resolver = "2"
+
+[patch.crates-io]
+candle_dataset_loader = { path = "D:/github_repo/candle_dataset_loader" } # for local test

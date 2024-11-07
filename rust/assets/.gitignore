@@ -8,3 +8,4 @@ Qwen2-VL-2B-Instruct-GPTQ-Int4/
 rwkv_v6/
 *.pt
 *.safetensors
+isic2018/
