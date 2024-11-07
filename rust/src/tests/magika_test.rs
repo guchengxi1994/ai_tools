@@ -4,6 +4,7 @@ use candle_nn::{
     ops::{self},
     LayerNormConfig, Module, VarBuilder, VarMap,
 };
+use rand::Rng;
 
 pub struct Magika {
     dense1: candle_nn::Linear,
@@ -52,7 +53,7 @@ impl Module for Magika {
         let xs = self.dense1.forward(&xs)?;
         println!("xs shape: {:?}", xs.shape());
         // [TODO]: shoule be `SpatialDropout`
-        let xs = ops::dropout(&xs, 0.5)?;
+        let xs = spatial_dropout(&xs, 0.5)?;
         let xs = xs.reshape(&[xs.dims()[0], 384, 512])?;
 
         let xs = self.layer_norm1.forward(&xs)?;
@@ -69,6 +70,22 @@ impl Module for Magika {
 
         Ok(xs)
     }
+}
+
+fn spatial_dropout(x: &Tensor, p: f64) -> candle_core::Result<Tensor> {
+    let mut rng = rand::thread_rng();
+    let dim_size = x.dims()[1];
+    let t = x.copy()?;
+    for i in 0..dim_size {
+        if rng.gen::<f64>() < p {
+            t.slice_assign(
+                &[0..x.dims()[0], i..i + 1, 0..x.dims()[2]],
+                &Tensor::zeros(&[x.dims()[0], 1, x.dims()[2]], x.dtype(), x.device())?,
+            )?;
+        }
+    }
+
+    Ok(t)
 }
 
 fn one_hot(
@@ -113,6 +130,15 @@ fn magika_test() -> anyhow::Result<()> {
     let model = Magika::new(vs.clone(), 113)?;
     let out = model.forward(&double_tensor)?;
     println!("out shape {:?}", out.shape());
+    let first = out.get(0)?;
+    println!("first {:?}", first.squeeze(0)?.to_vec1::<f32>());
+    println!("first shape {:?}", first.shape());
+    let prs = candle_core::IndexOp::i(&first.unsqueeze(0)?, 0)?.to_vec1::<f32>()?;
+    println!("prs {:?}", prs);
+    let mut top: Vec<_> = prs.iter().enumerate().collect();
+    top.sort_by(|a, b| b.1.partial_cmp(a.1).unwrap());
+    let top = top.into_iter().take(5).collect::<Vec<_>>();
+    println!("top {:?}", top);
 
     anyhow::Ok(())
 }
