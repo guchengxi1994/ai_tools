@@ -2,7 +2,7 @@ use super::reflection_pad2d::reflection_pad2d;
 use candle_nn::{conv2d, Conv2d, Conv2dConfig, Module, VarBuilder};
 
 /// [UNFINISHED]
-/// some operations (InstanceNorm2d, relu inplace, reflection_pad2d) are not
+/// some operations (InstanceNorm2d, reflection_pad2d) are not
 /// implemented yet in candle
 pub struct DownBlock {
     pub pad_size: usize,

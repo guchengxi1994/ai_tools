@@ -468,7 +468,7 @@ fn test_infer_unet() -> anyhow::Result<()> {
     UNet::infer(
         r"D:\github_repo\ai_tools\rust\assets\isic2018\train\images\0.png".to_owned(),
         true,
-        false
+        false,
     )?;
 
     anyhow::Ok(())
