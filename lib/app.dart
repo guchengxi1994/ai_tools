@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'llm/chat_screen.dart';
 import 'sidebar/sidebar.dart';
 import 'sidebar/sidebar_notifier.dart';
+import 'tools/tools_screen.dart';
 
 class App extends ConsumerStatefulWidget {
   const App({super.key});
@@ -23,7 +24,7 @@ class _AppState extends ConsumerState<App> {
           Expanded(
               child: PageView(
             controller: ref.read(sidebarProvider.notifier).pageController,
-            children: [ChatScreen(), CvScreen()],
+            children: [ChatScreen(), CvScreen(), ToolsScreen()],
           ))
         ],
       ),

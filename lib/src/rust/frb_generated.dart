@@ -6,6 +6,7 @@
 import 'api/cv.dart';
 import 'api/llm.dart';
 import 'api/simple.dart';
+import 'api/tools.dart';
 import 'cv/object_detect_result.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -14,6 +15,7 @@ import 'frb_generated.io.dart'
     if (dart.library.js_interop) 'frb_generated.web.dart';
 import 'llm.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'tools.dart';
 
 /// Main entrypoint of the Rust API
 class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
@@ -72,7 +74,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.5.1';
 
   @override
-  int get rustContentHash => 1599591258;
+  int get rustContentHash => -1643497317;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -123,6 +125,10 @@ abstract class RustLibApi extends BaseApi {
   Future<void> crateApiSimpleInitApp();
 
   Future<void> crateApiSimpleInitLogger();
+
+  Future<void> crateApiToolsTrainAMlp({required String csvPath});
+
+  Stream<TrainMessage> crateApiToolsTrainMessageStream();
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -553,6 +559,56 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         argNames: [],
       );
 
+  @override
+  Future<void> crateApiToolsTrainAMlp({required String csvPath}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(csvPath, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 18, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiToolsTrainAMlpConstMeta,
+      argValues: [csvPath],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiToolsTrainAMlpConstMeta => const TaskConstMeta(
+        debugName: "train_a_mlp",
+        argNames: ["csvPath"],
+      );
+
+  @override
+  Stream<TrainMessage> crateApiToolsTrainMessageStream() {
+    final s = RustStreamSink<TrainMessage>();
+    handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_StreamSink_train_message_Sse(s, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 19)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiToolsTrainMessageStreamConstMeta,
+      argValues: [s],
+      apiImpl: this,
+    ));
+    return s.stream;
+  }
+
+  TaskConstMeta get kCrateApiToolsTrainMessageStreamConstMeta =>
+      const TaskConstMeta(
+        debugName: "train_message_stream",
+        argNames: ["s"],
+      );
+
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
@@ -567,6 +623,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   RustStreamSink<ChatResponse> dco_decode_StreamSink_chat_response_Sse(
+      dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    throw UnimplementedError();
+  }
+
+  @protected
+  RustStreamSink<TrainMessage> dco_decode_StreamSink_train_message_Sse(
       dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     throw UnimplementedError();
@@ -719,6 +782,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  TrainMessage dco_decode_train_message(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return TrainMessage(
+      modelName: dco_decode_String(arr[0]),
+      message: dco_decode_String(arr[1]),
+      epoch: dco_decode_usize(arr[2]),
+      loss: dco_decode_f_32(arr[3]),
+    );
+  }
+
+  @protected
   int dco_decode_u_8(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
@@ -752,6 +829,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   RustStreamSink<ChatResponse> sse_decode_StreamSink_chat_response_Sse(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    throw UnimplementedError('Unreachable ()');
+  }
+
+  @protected
+  RustStreamSink<TrainMessage> sse_decode_StreamSink_train_message_Sse(
       SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     throw UnimplementedError('Unreachable ()');
@@ -940,6 +1024,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  TrainMessage sse_decode_train_message(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_modelName = sse_decode_String(deserializer);
+    var var_message = sse_decode_String(deserializer);
+    var var_epoch = sse_decode_usize(deserializer);
+    var var_loss = sse_decode_f_32(deserializer);
+    return TrainMessage(
+        modelName: var_modelName,
+        message: var_message,
+        epoch: var_epoch,
+        loss: var_loss);
+  }
+
+  @protected
   int sse_decode_u_8(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8();
@@ -984,6 +1082,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         self.setupAndSerialize(
             codec: SseCodec(
           decodeSuccessData: sse_decode_chat_response,
+          decodeErrorData: sse_decode_AnyhowException,
+        )),
+        serializer);
+  }
+
+  @protected
+  void sse_encode_StreamSink_train_message_Sse(
+      RustStreamSink<TrainMessage> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(
+        self.setupAndSerialize(
+            codec: SseCodec(
+          decodeSuccessData: sse_decode_train_message,
           decodeErrorData: sse_decode_AnyhowException,
         )),
         serializer);
@@ -1145,6 +1256,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     if (self != null) {
       sse_encode_list_String(self, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_train_message(TrainMessage self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.modelName, serializer);
+    sse_encode_String(self.message, serializer);
+    sse_encode_usize(self.epoch, serializer);
+    sse_encode_f_32(self.loss, serializer);
   }
 
   @protected

@@ -5,5 +5,6 @@ mod cv;
 mod frb_generated;
 mod llm;
 mod tests;
+mod tools;
 mod utils;
 mod web_server;

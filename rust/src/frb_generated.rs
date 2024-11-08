@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.5.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1599591258;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1643497317;
 
 // Section: executor
 
@@ -633,6 +633,76 @@ fn wire__crate__api__simple__init_logger_impl(
         },
     )
 }
+fn wire__crate__api__tools__train_a_mlp_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "train_a_mlp",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_csv_path = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Result::<_, ()>::Ok({
+                        crate::api::tools::train_a_mlp(api_csv_path);
+                    })?;
+                    Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__tools__train_message_stream_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "train_message_stream",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_s = <StreamSink<
+                crate::tools::TrainMessage,
+                flutter_rust_bridge::for_generated::SseCodec,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                (move || {
+                    let output_ok = crate::api::tools::train_message_stream(api_s)?;
+                    Ok(output_ok)
+                })(),
+            )
+        },
+    )
+}
 
 // Section: dart2rust
 
@@ -654,6 +724,16 @@ impl SseDecode for StreamSink<String, flutter_rust_bridge::for_generated::SseCod
 
 impl SseDecode
     for StreamSink<crate::llm::ChatResponse, flutter_rust_bridge::for_generated::SseCodec>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return StreamSink::deserialize(inner);
+    }
+}
+
+impl SseDecode
+    for StreamSink<crate::tools::TrainMessage, flutter_rust_bridge::for_generated::SseCodec>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -843,6 +923,22 @@ impl SseDecode for Option<Vec<String>> {
     }
 }
 
+impl SseDecode for crate::tools::TrainMessage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_modelName = <String>::sse_decode(deserializer);
+        let mut var_message = <String>::sse_decode(deserializer);
+        let mut var_epoch = <usize>::sse_decode(deserializer);
+        let mut var_loss = <f32>::sse_decode(deserializer);
+        return crate::tools::TrainMessage {
+            model_name: var_modelName,
+            message: var_message,
+            epoch: var_epoch,
+            loss: var_loss,
+        };
+    }
+}
+
 impl SseDecode for u8 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -882,6 +978,7 @@ fn pde_ffi_dispatcher_primary_impl(
         14 => wire__crate__api__llm__stop_server_impl(port, ptr, rust_vec_len, data_len),
         16 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
         17 => wire__crate__api__simple__init_logger_impl(port, ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__tools__train_a_mlp_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -904,6 +1001,7 @@ fn pde_ffi_dispatcher_sync_impl(
         ),
         13 => wire__crate__api__llm__server_state_stream_impl(ptr, rust_vec_len, data_len),
         15 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__tools__train_message_stream_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -984,6 +1082,24 @@ impl flutter_rust_bridge::IntoIntoDart<crate::cv::object_detect_result::ObjectDe
         self
     }
 }
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::tools::TrainMessage {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.model_name.into_into_dart().into_dart(),
+            self.message.into_into_dart().into_dart(),
+            self.epoch.into_into_dart().into_dart(),
+            self.loss.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::tools::TrainMessage {}
+impl flutter_rust_bridge::IntoIntoDart<crate::tools::TrainMessage> for crate::tools::TrainMessage {
+    fn into_into_dart(self) -> crate::tools::TrainMessage {
+        self
+    }
+}
 
 impl SseEncode for flutter_rust_bridge::for_generated::anyhow::Error {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -1001,6 +1117,15 @@ impl SseEncode for StreamSink<String, flutter_rust_bridge::for_generated::SseCod
 
 impl SseEncode
     for StreamSink<crate::llm::ChatResponse, flutter_rust_bridge::for_generated::SseCodec>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        unimplemented!("")
+    }
+}
+
+impl SseEncode
+    for StreamSink<crate::tools::TrainMessage, flutter_rust_bridge::for_generated::SseCodec>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1150,6 +1275,16 @@ impl SseEncode for Option<Vec<String>> {
         if let Some(value) = self {
             <Vec<String>>::sse_encode(value, serializer);
         }
+    }
+}
+
+impl SseEncode for crate::tools::TrainMessage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.model_name, serializer);
+        <String>::sse_encode(self.message, serializer);
+        <usize>::sse_encode(self.epoch, serializer);
+        <f32>::sse_encode(self.loss, serializer);
     }
 }
 

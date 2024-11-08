@@ -32,6 +32,17 @@ class Sidebar extends ConsumerWidget {
           },
           index: 1,
           title: "CV"),
+      SidebarItem(
+          icon: const Icon(
+            Icons.functions,
+            color: Colors.blueAccent,
+          ),
+          iconInactive: const Icon(Icons.functions),
+          onClick: (v) {
+            ref.read(sidebarProvider.notifier).setIndex(v);
+          },
+          index: 2,
+          title: "Tools"),
     ];
 
     return Padding(

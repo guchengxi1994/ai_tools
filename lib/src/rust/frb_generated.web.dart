@@ -9,12 +9,14 @@
 import 'api/cv.dart';
 import 'api/llm.dart';
 import 'api/simple.dart';
+import 'api/tools.dart';
 import 'cv/object_detect_result.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
 import 'llm.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
+import 'tools.dart';
 
 abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   RustLibApiImplPlatform({
@@ -32,6 +34,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   RustStreamSink<ChatResponse> dco_decode_StreamSink_chat_response_Sse(
+      dynamic raw);
+
+  @protected
+  RustStreamSink<TrainMessage> dco_decode_StreamSink_train_message_Sse(
       dynamic raw);
 
   @protected
@@ -92,6 +98,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<String>? dco_decode_opt_list_String(dynamic raw);
 
   @protected
+  TrainMessage dco_decode_train_message(dynamic raw);
+
+  @protected
   int dco_decode_u_8(dynamic raw);
 
   @protected
@@ -109,6 +118,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   RustStreamSink<ChatResponse> sse_decode_StreamSink_chat_response_Sse(
+      SseDeserializer deserializer);
+
+  @protected
+  RustStreamSink<TrainMessage> sse_decode_StreamSink_train_message_Sse(
       SseDeserializer deserializer);
 
   @protected
@@ -172,6 +185,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<String>? sse_decode_opt_list_String(SseDeserializer deserializer);
 
   @protected
+  TrainMessage sse_decode_train_message(SseDeserializer deserializer);
+
+  @protected
   int sse_decode_u_8(SseDeserializer deserializer);
 
   @protected
@@ -191,6 +207,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_StreamSink_chat_response_Sse(
       RustStreamSink<ChatResponse> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_StreamSink_train_message_Sse(
+      RustStreamSink<TrainMessage> self, SseSerializer serializer);
 
   @protected
   void sse_encode_String(String self, SseSerializer serializer);
@@ -253,6 +273,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_list_String(List<String>? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_train_message(TrainMessage self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_8(int self, SseSerializer serializer);
