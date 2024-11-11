@@ -7,6 +7,7 @@ use crate::{
     frb_generated::StreamSink,
 };
 
+pub mod bigcode;
 pub mod model;
 pub mod qwen2;
 pub mod rwkv;

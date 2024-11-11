@@ -9,3 +9,4 @@ rwkv_v6/
 *.pt
 *.safetensors
 isic2018/
+bigcode/

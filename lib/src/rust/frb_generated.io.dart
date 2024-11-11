@@ -7,6 +7,7 @@ import 'api/cv.dart';
 import 'api/llm.dart';
 import 'api/simple.dart';
 import 'api/tools.dart';
+import 'cv.dart';
 import 'cv/object_detect_result.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -60,6 +61,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ChatResponse dco_decode_chat_response(dynamic raw);
 
   @protected
+  ClassificationResults dco_decode_classification_results(dynamic raw);
+
+  @protected
   double dco_decode_f_32(dynamic raw);
 
   @protected
@@ -84,6 +88,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<(String, double)> dco_decode_list_record_string_f_32(dynamic raw);
+
+  @protected
   ObjectDetectResult dco_decode_object_detect_result(dynamic raw);
 
   @protected
@@ -94,6 +101,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<String>? dco_decode_opt_list_String(dynamic raw);
+
+  @protected
+  (String, double) dco_decode_record_string_f_32(dynamic raw);
 
   @protected
   TrainMessage dco_decode_train_message(dynamic raw);
@@ -145,6 +155,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ChatResponse sse_decode_chat_response(SseDeserializer deserializer);
 
   @protected
+  ClassificationResults sse_decode_classification_results(
+      SseDeserializer deserializer);
+
+  @protected
   double sse_decode_f_32(SseDeserializer deserializer);
 
   @protected
@@ -170,6 +184,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
+  List<(String, double)> sse_decode_list_record_string_f_32(
+      SseDeserializer deserializer);
+
+  @protected
   ObjectDetectResult sse_decode_object_detect_result(
       SseDeserializer deserializer);
 
@@ -181,6 +199,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<String>? sse_decode_opt_list_String(SseDeserializer deserializer);
+
+  @protected
+  (String, double) sse_decode_record_string_f_32(SseDeserializer deserializer);
 
   @protected
   TrainMessage sse_decode_train_message(SseDeserializer deserializer);
@@ -233,6 +254,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_chat_response(ChatResponse self, SseSerializer serializer);
 
   @protected
+  void sse_encode_classification_results(
+      ClassificationResults self, SseSerializer serializer);
+
+  @protected
   void sse_encode_f_32(double self, SseSerializer serializer);
 
   @protected
@@ -260,6 +285,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       Uint8List self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_record_string_f_32(
+      List<(String, double)> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_object_detect_result(
       ObjectDetectResult self, SseSerializer serializer);
 
@@ -271,6 +300,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_list_String(List<String>? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_record_string_f_32(
+      (String, double) self, SseSerializer serializer);
 
   @protected
   void sse_encode_train_message(TrainMessage self, SseSerializer serializer);

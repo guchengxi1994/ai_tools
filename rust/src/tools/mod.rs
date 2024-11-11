@@ -59,7 +59,7 @@ pub fn train_a_mlp(csv_path: String) -> anyhow::Result<()> {
             if let Some(sink) = TRAIN_MESSAGE_SINK.read().unwrap().as_ref() {
                 let _ = sink.add(message.clone());
             }
-        } 
+        }
     }
 
     vm.save("model.bin")?;

@@ -1,7 +1,9 @@
 use flutter_rust_bridge::frb;
 
 use crate::{
-    cv::LOAD_MODEL_STATE_SINK, frb_generated::StreamSink, utils::image_processor::ImageProcessor,
+    cv::{ClassificationResults, LOAD_MODEL_STATE_SINK},
+    frb_generated::StreamSink,
+    utils::image_processor::ImageProcessor,
 };
 
 pub fn classify_image(s: String, model_path: String, classes: Option<Vec<String>>) -> String {
@@ -66,4 +68,42 @@ pub fn load_model_state_stream(s: StreamSink<String>) -> anyhow::Result<()> {
     let mut stream = LOAD_MODEL_STATE_SINK.write().unwrap();
     *stream = Some(s);
     anyhow::Ok(())
+}
+
+pub fn load_efficientnet(model_path: String) {
+    let mut models = crate::cv::CV_MODELS.write().unwrap();
+    let r = models.set_efficientnet(model_path);
+    match r {
+        Ok(_) => {}
+        Err(e) => println!("[rust] error  {:?}", e),
+    }
+}
+
+pub fn load_beit(model_path: String) {
+    let mut models = crate::cv::CV_MODELS.write().unwrap();
+    let r = models.set_beit(model_path);
+    match r {
+        Ok(_) => {}
+        Err(e) => println!("[rust] error  {:?}", e),
+    }
+}
+
+pub fn run_classification(img: String, top_n: Option<usize>) -> ClassificationResults {
+    let start = std::time::Instant::now();
+    let model = crate::cv::CV_MODELS.read().unwrap();
+    let r = model.run_classification(img, top_n.unwrap_or(5));
+    let duration = start.elapsed().as_secs_f64();
+    match r {
+        Ok(r) => ClassificationResults {
+            results: r,
+            duration,
+        },
+        Err(e) => {
+            println!("[rust] error  {:?}", e);
+            return ClassificationResults {
+                results: vec![],
+                duration,
+            };
+        }
+    }
 }

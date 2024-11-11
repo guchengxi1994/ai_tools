@@ -256,6 +256,7 @@ fn detect(
 }
 
 #[allow(unused_imports)]
+#[cfg(test)]
 mod tests {
     use candle_core::{DType, Tensor};
     use candle_nn::{Module, VarBuilder};

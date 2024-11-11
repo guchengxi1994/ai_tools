@@ -3,6 +3,7 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
+import '../cv.dart';
 import '../cv/object_detect_result.dart';
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
@@ -26,3 +27,13 @@ Future<List<ObjectDetectResult>> yolov8Detect({required List<int> img}) =>
 
 Stream<String> loadModelStateStream() =>
     RustLib.instance.api.crateApiCvLoadModelStateStream();
+
+Future<void> loadEfficientnet({required String modelPath}) =>
+    RustLib.instance.api.crateApiCvLoadEfficientnet(modelPath: modelPath);
+
+Future<void> loadBeit({required String modelPath}) =>
+    RustLib.instance.api.crateApiCvLoadBeit(modelPath: modelPath);
+
+Future<ClassificationResults> runClassification(
+        {required String img, BigInt? topN}) =>
+    RustLib.instance.api.crateApiCvRunClassification(img: img, topN: topN);
