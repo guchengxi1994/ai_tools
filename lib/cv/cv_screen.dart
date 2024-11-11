@@ -1,24 +1,26 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:ai_tools/cv/cv_notifier.dart';
 import 'package:ai_tools/cv/object_bbox.dart';
 import 'package:ai_tools/src/rust/api/cv.dart';
 import 'package:ai_tools/src/rust/cv/object_detect_result.dart';
 import 'package:ai_tools/utils.dart';
 import 'package:desktop_drop/desktop_drop.dart';
-import 'package:expand_widget/expand_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;
 
-class CvScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class CvScreen extends ConsumerStatefulWidget {
   const CvScreen({super.key});
 
   @override
-  State<CvScreen> createState() => _CvScreenState();
+  ConsumerState<CvScreen> createState() => _CvScreenState();
 }
 
-class _CvScreenState extends State<CvScreen> {
+class _CvScreenState extends ConsumerState<CvScreen> {
   final GlobalKey _key = GlobalKey();
 
   final loadModelStream = loadModelStateStream();
@@ -58,8 +60,27 @@ class _CvScreenState extends State<CvScreen> {
     }
   }
 
+  bool _isPopupVisible = false;
+
+  void togglePopup() {
+    setState(() {
+      _isPopupVisible = !_isPopupVisible;
+    });
+
+    // 可选：自动隐藏弹窗
+    if (_isPopupVisible) {
+      Future.delayed(Duration(seconds: 3), () {
+        setState(() {
+          _isPopupVisible = false;
+        });
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(cvStateProvider);
+
     return Scaffold(
       body: Stack(
         children: [
@@ -104,25 +125,65 @@ class _CvScreenState extends State<CvScreen> {
           )),
           Positioned(
             top: 0,
-            child: Container(
-              color: Colors.white.withOpacity(0.5),
-              width: MediaQuery.of(context).size.width,
-              child: ExpandChild(
-                collapsedVisibilityFactor: 0.5,
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 20, top: 20),
-                  child: Wrap(
-                    alignment: WrapAlignment.start,
-                    children: [
-                      ElevatedButton(
-                        child: Text('Yolov8'),
-                        onPressed: () {
-                          loadYolov8(
-                              modelPath:
-                                  r"D:\github_repo\ai_tools\rust\assets\yolov8n.safetensors");
-                        },
-                      ),
-                    ],
+            left: 0,
+            child: GestureDetector(
+              onTap: () {
+                togglePopup();
+              },
+              child: Container(
+                color: Colors.white.withOpacity(0.5),
+                width: MediaQuery.of(context).size.width,
+                child: AnimatedContainer(
+                  height: _isPopupVisible ? 500 : 100,
+                  duration: Duration(milliseconds: 300),
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 20, top: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Object Detection"),
+                        Wrap(
+                          alignment: WrapAlignment.start,
+                          children: [
+                            ElevatedButton(
+                              child: Text('Yolov8'),
+                              onPressed: () {
+                                loadYolov8(
+                                        modelPath:
+                                            r"D:\github_repo\ai_tools\rust\assets\yolov8n.safetensors")
+                                    .then((_) {
+                                  ref
+                                      .read(cvStateProvider.notifier)
+                                      .changeModel(CvModels.yolov8);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        Text("Classification"),
+                        Wrap(
+                          alignment: WrapAlignment.start,
+                          children: [
+                            ElevatedButton(
+                              child: Text('EfficientNet'),
+                              onPressed: () {
+                                ref
+                                    .read(cvStateProvider.notifier)
+                                    .changeModel(CvModels.efficientnet);
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text('Beit'),
+                              onPressed: () {
+                                ref
+                                    .read(cvStateProvider.notifier)
+                                    .changeModel(CvModels.beit);
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
