@@ -5,7 +5,9 @@ use candle_onnx::onnx::ModelProto;
 use candle_transformers::models::beit::BeitVisionTransformer;
 use image::DynamicImage;
 use image::ImageReader;
+use object_detect_result::ObjectDetectResult;
 use once_cell::sync::Lazy;
+use yolov8::model::YoloV8;
 
 use crate::frb_generated::StreamSink;
 
@@ -24,6 +26,7 @@ pub static CV_MODELS: Lazy<RwLock<CvModels>> = Lazy::new(|| RwLock::new(CvModels
 pub struct CvModels {
     pub beit: Option<Box<dyn ModelRun<Vec<(String, f32)>> + Send + Sync>>,
     pub efficientnet: Option<Box<dyn ModelRun<Vec<(String, f32)>> + Send + Sync>>,
+    pub yolov8: Option<Box<dyn ModelRun<Vec<ObjectDetectResult>> + Send + Sync>>,
 }
 
 impl CvModels {
@@ -31,7 +34,27 @@ impl CvModels {
         Self {
             beit: None,
             efficientnet: None,
+            yolov8: None,
         }
+    }
+
+    pub fn run_detect(&self, image_path: String) -> anyhow::Result<Vec<ObjectDetectResult>> {
+        if self.yolov8.is_none() {
+            anyhow::bail!("No model loaded");
+        }
+        let results = self.yolov8.as_ref().unwrap().run(image_path, 1)?;
+        anyhow::Ok(results)
+    }
+
+    pub fn run_detect_in_bytes(
+        &self,
+        image_bytes: Vec<u8>,
+    ) -> anyhow::Result<Vec<ObjectDetectResult>> {
+        if self.yolov8.is_none() {
+            anyhow::bail!("No model loaded");
+        }
+        let results = self.yolov8.as_ref().unwrap().run_in_bytes(image_bytes)?;
+        anyhow::Ok(results)
     }
 
     pub fn run_classification(
@@ -77,6 +100,17 @@ impl CvModels {
         self.efficientnet = Some(Box::new(model));
         anyhow::Ok(())
     }
+
+    pub fn set_yolov8(&mut self, model_path: String) -> anyhow::Result<()> {
+        if self.yolov8.is_some() {
+            return anyhow::Ok(());
+        }
+
+        let mut model: Model<YoloV8> = Model::<YoloV8>::new(model_path);
+        model.load()?;
+        self.yolov8 = Some(Box::new(model));
+        anyhow::Ok(())
+    }
 }
 
 pub fn load_image384_beit_norm(p: String, device: &Device) -> anyhow::Result<Tensor> {
@@ -113,7 +147,13 @@ pub fn load_image224_efficientnet_norm(p: String, device: &Device) -> anyhow::Re
 
 #[derive(Debug)]
 pub struct ClassificationResults {
-    pub results: Vec<(String,f32)>,
+    pub results: Vec<(String, f32)>,
+    pub duration: f64,
+}
+
+#[derive(Debug)]
+pub struct DetectResults {
+    pub results: Vec<ObjectDetectResult>,
     pub duration: f64,
 }
 
@@ -131,6 +171,8 @@ pub struct Model<T> {
 
 pub trait ModelRun<S> {
     fn run(&self, image_path: String, top_n: usize) -> anyhow::Result<S>;
+
+    fn run_in_bytes(&self, image_bytes: Vec<u8>) -> anyhow::Result<S>;
 
     fn load(&mut self) -> anyhow::Result<()>;
 

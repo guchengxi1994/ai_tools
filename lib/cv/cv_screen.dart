@@ -47,9 +47,9 @@ class _CvScreenState extends State<CvScreen> {
       if (byteData != null) {
         // 获取 PNG 字节数据
         final pngBytes = byteData.buffer.asUint8List();
-        yolov8Detect(img: pngBytes).then((v) {
+        runDetectInBytes(img: pngBytes).then((v) {
           setState(() {
-            results = v;
+            results = v.results;
           });
         });
       }
@@ -117,7 +117,9 @@ class _CvScreenState extends State<CvScreen> {
                       ElevatedButton(
                         child: Text('Yolov8'),
                         onPressed: () {
-                          yolov8Init();
+                          loadYolov8(
+                              modelPath:
+                                  r"D:\github_repo\ai_tools\rust\assets\yolov8n.safetensors");
                         },
                       ),
                     ],

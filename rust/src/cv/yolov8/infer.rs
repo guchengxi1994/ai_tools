@@ -4,7 +4,9 @@ use std::{io::Cursor, sync::RwLock};
 
 use crate::{
     constant::COCO_CLASSES,
-    cv::{object_detect_result::ObjectDetectResult, LOAD_MODEL_STATE_SINK},
+    cv::{
+        object_detect_result::ObjectDetectResult, CvTask, Model, ModelRun, LOAD_MODEL_STATE_SINK,
+    },
 };
 
 use super::model::{Multiples, YoloV8};
@@ -17,6 +19,158 @@ use once_cell::sync::Lazy;
 
 pub static YOLOV8N: Lazy<RwLock<Option<YoloV8>>> = Lazy::new(|| RwLock::new(None));
 
+impl Model<YoloV8> {
+    pub fn new(model_path: String) -> Self {
+        Model {
+            inner: None,
+            model_path,
+            device: Device::cuda_if_available(0).unwrap_or(Device::Cpu),
+        }
+    }
+}
+
+impl ModelRun<Vec<ObjectDetectResult>> for Model<YoloV8> {
+    fn run_in_bytes(&self, image_bytes: Vec<u8>) -> anyhow::Result<Vec<ObjectDetectResult>> {
+        if let Some(v8) = &self.inner {
+            let original_image = image::ImageReader::new(Cursor::new(image_bytes))
+                .with_guessed_format()?
+                .decode()?;
+
+            let (width, height) = {
+                let w = original_image.width() as usize;
+                let h = original_image.height() as usize;
+                if w < h {
+                    let w = w * 640 / h;
+                    // Sizes have to be divisible by 32.
+                    (w / 32 * 32, 640)
+                } else {
+                    let h = h * 640 / w;
+                    (640, h / 32 * 32)
+                }
+            };
+
+            let image_t = {
+                let img = original_image.resize_exact(
+                    width as u32,
+                    height as u32,
+                    image::imageops::FilterType::CatmullRom,
+                );
+                let data = img.to_rgb8().into_raw();
+                Tensor::from_vec(
+                    data,
+                    (img.height() as usize, img.width() as usize, 3),
+                    &self.device,
+                )?
+                .permute((2, 0, 1))?
+            };
+            let image_t = (image_t.unsqueeze(0)?.to_dtype(DType::F32)? * (1. / 255.))?;
+
+            let predictions = v8.forward(&image_t)?.squeeze(0)?;
+
+            let results = detect_result(
+                &predictions,
+                original_image,
+                width,
+                height,
+                0.1,
+                0.45,
+                Some(self.device.clone()),
+                None,
+            )?;
+            return Ok(results);
+        }
+
+        anyhow::bail!("model not loaded")
+    }
+
+    fn run(&self, image_path: String, top_n: usize) -> anyhow::Result<Vec<ObjectDetectResult>> {
+        let _ = top_n;
+        if let Some(v8) = &self.inner {
+            let original_image = image::ImageReader::open(&image_path)?
+                .with_guessed_format()?
+                .decode()?;
+
+            let (width, height) = {
+                let w = original_image.width() as usize;
+                let h = original_image.height() as usize;
+                if w < h {
+                    let w = w * 640 / h;
+                    // Sizes have to be divisible by 32.
+                    (w / 32 * 32, 640)
+                } else {
+                    let h = h * 640 / w;
+                    (640, h / 32 * 32)
+                }
+            };
+
+            let image_t = {
+                let img = original_image.resize_exact(
+                    width as u32,
+                    height as u32,
+                    image::imageops::FilterType::CatmullRom,
+                );
+                let data = img.to_rgb8().into_raw();
+                Tensor::from_vec(
+                    data,
+                    (img.height() as usize, img.width() as usize, 3),
+                    &self.device,
+                )?
+                .permute((2, 0, 1))?
+            };
+            let image_t = (image_t.unsqueeze(0)?.to_dtype(DType::F32)? * (1. / 255.))?;
+
+            let predictions = v8.forward(&image_t)?.squeeze(0)?;
+
+            let results = detect_result(
+                &predictions,
+                original_image,
+                width,
+                height,
+                0.1,
+                0.45,
+                Some(self.device.clone()),
+                None,
+            )?;
+            return Ok(results);
+        }
+
+        anyhow::bail!("model not loaded")
+    }
+
+    fn load(&mut self) -> anyhow::Result<()> {
+        let size: Multiples;
+        if self.model_path.contains("yolov8n") {
+            size = Multiples::n();
+        } else if self.model_path.contains("yolov8s") {
+            size = Multiples::s();
+        } else if self.model_path.contains("yolov8m") {
+            size = Multiples::m();
+        } else if self.model_path.contains("yolov8l") {
+            size = Multiples::l();
+        } else if self.model_path.contains("yolov8x") {
+            size = Multiples::x();
+        } else {
+            return Err(anyhow::anyhow!("unknown model type"));
+        }
+        let vb = unsafe {
+            VarBuilder::from_mmaped_safetensors(
+                &[self.model_path.clone()],
+                DType::F32,
+                &self.device,
+            )?
+        };
+        let v8 = YoloV8::load(vb, size, 80)?;
+        self.inner = Some(v8);
+
+        anyhow::Ok(())
+    }
+
+    fn get_task_type(&self) -> crate::cv::CvTask {
+        CvTask::ObjectDetect
+    }
+}
+
+#[deprecated]
 pub fn init_yolov8_n(model_path: Option<String>) -> anyhow::Result<()> {
     let mp = model_path
         .unwrap_or(r"D:\github_repo\ai_tools\rust\assets\yolov8n.safetensors".to_string());
@@ -34,6 +188,7 @@ pub fn init_yolov8_n(model_path: Option<String>) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[deprecated]
 pub fn yolov8n_detect(img: Vec<u8>) -> anyhow::Result<Vec<ObjectDetectResult>> {
     let model = YOLOV8N.read().unwrap();
     let d = Device::cuda_if_available(0)?;

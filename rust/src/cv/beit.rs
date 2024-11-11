@@ -19,6 +19,10 @@ impl Model<BeitVisionTransformer> {
 }
 
 impl ModelRun<Vec<(String, f32)>> for Model<BeitVisionTransformer> {
+    fn run_in_bytes(&self, image_bytes: Vec<u8>) -> anyhow::Result<Vec<(String, f32)>> {
+        anyhow::bail!("Not implemented")
+    }
+
     fn run(&self, image_path: String, top_n: usize) -> anyhow::Result<Vec<(String, f32)>> {
         assert!(top_n <= 100 && top_n > 0);
 

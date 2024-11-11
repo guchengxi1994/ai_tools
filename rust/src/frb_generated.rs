@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.5.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1082087821;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -293700612;
 
 // Section: executor
 
@@ -189,6 +189,41 @@ fn wire__crate__api__cv__load_model_state_stream_impl(
         },
     )
 }
+fn wire__crate__api__cv__load_yolov8_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "load_yolov8",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_model_path = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Result::<_, ()>::Ok({
+                        crate::api::cv::load_yolov8(api_model_path);
+                    })?;
+                    Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
 fn wire__crate__api__cv__run_classification_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -219,6 +254,73 @@ fn wire__crate__api__cv__run_classification_impl(
                     let output_ok = Result::<_, ()>::Ok(crate::api::cv::run_classification(
                         api_img, api_top_n,
                     ))?;
+                    Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__cv__run_detect_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "run_detect",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_img = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Result::<_, ()>::Ok(crate::api::cv::run_detect(api_img))?;
+                    Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__cv__run_detect_in_bytes_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "run_detect_in_bytes",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_img = <Vec<u8>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok =
+                        Result::<_, ()>::Ok(crate::api::cv::run_detect_in_bytes(api_img))?;
                     Ok(output_ok)
                 })())
             }
@@ -915,6 +1017,19 @@ impl SseDecode for crate::cv::ClassificationResults {
     }
 }
 
+impl SseDecode for crate::cv::DetectResults {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_results =
+            <Vec<crate::cv::object_detect_result::ObjectDetectResult>>::sse_decode(deserializer);
+        let mut var_duration = <f64>::sse_decode(deserializer);
+        return crate::cv::DetectResults {
+            results: var_results,
+            duration: var_duration,
+        };
+    }
+}
+
 impl SseDecode for f32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1109,18 +1224,21 @@ fn pde_ffi_dispatcher_primary_impl(
         1 => wire__crate__api__cv__classify_image_impl(port, ptr, rust_vec_len, data_len),
         2 => wire__crate__api__cv__load_beit_impl(port, ptr, rust_vec_len, data_len),
         3 => wire__crate__api__cv__load_efficientnet_impl(port, ptr, rust_vec_len, data_len),
-        5 => wire__crate__api__cv__run_classification_impl(port, ptr, rust_vec_len, data_len),
-        6 => wire__crate__api__cv__yolov8_cleanup_impl(port, ptr, rust_vec_len, data_len),
-        7 => wire__crate__api__cv__yolov8_detect_impl(port, ptr, rust_vec_len, data_len),
-        8 => wire__crate__api__cv__yolov8_init_impl(port, ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__llm__clear_all_models_impl(port, ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__llm__qwen2_chat_impl(port, ptr, rust_vec_len, data_len),
-        14 => wire__crate__api__llm__qwen2_prompt_chat_impl(port, ptr, rust_vec_len, data_len),
-        15 => wire__crate__api__llm__run_server_impl(port, ptr, rust_vec_len, data_len),
-        17 => wire__crate__api__llm__stop_server_impl(port, ptr, rust_vec_len, data_len),
-        19 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__simple__init_logger_impl(port, ptr, rust_vec_len, data_len),
-        21 => wire__crate__api__tools__train_a_mlp_impl(port, ptr, rust_vec_len, data_len),
+        5 => wire__crate__api__cv__load_yolov8_impl(port, ptr, rust_vec_len, data_len),
+        6 => wire__crate__api__cv__run_classification_impl(port, ptr, rust_vec_len, data_len),
+        7 => wire__crate__api__cv__run_detect_impl(port, ptr, rust_vec_len, data_len),
+        8 => wire__crate__api__cv__run_detect_in_bytes_impl(port, ptr, rust_vec_len, data_len),
+        9 => wire__crate__api__cv__yolov8_cleanup_impl(port, ptr, rust_vec_len, data_len),
+        10 => wire__crate__api__cv__yolov8_detect_impl(port, ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__cv__yolov8_init_impl(port, ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__llm__clear_all_models_impl(port, ptr, rust_vec_len, data_len),
+        16 => wire__crate__api__llm__qwen2_chat_impl(port, ptr, rust_vec_len, data_len),
+        17 => wire__crate__api__llm__qwen2_prompt_chat_impl(port, ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__llm__run_server_impl(port, ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__llm__stop_server_impl(port, ptr, rust_vec_len, data_len),
+        22 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
+        23 => wire__crate__api__simple__init_logger_impl(port, ptr, rust_vec_len, data_len),
+        24 => wire__crate__api__tools__train_a_mlp_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1134,16 +1252,16 @@ fn pde_ffi_dispatcher_sync_impl(
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
         4 => wire__crate__api__cv__load_model_state_stream_impl(ptr, rust_vec_len, data_len),
-        9 => wire__crate__api__llm__chat_response_stream_impl(ptr, rust_vec_len, data_len),
-        11 => wire__crate__api__llm__format_prompt_impl(ptr, rust_vec_len, data_len),
-        12 => wire__crate__api__llm__format_prompt_with_thought_chain_impl(
+        12 => wire__crate__api__llm__chat_response_stream_impl(ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__llm__format_prompt_impl(ptr, rust_vec_len, data_len),
+        15 => wire__crate__api__llm__format_prompt_with_thought_chain_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        16 => wire__crate__api__llm__server_state_stream_impl(ptr, rust_vec_len, data_len),
-        18 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
-        22 => wire__crate__api__tools__train_message_stream_impl(ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__llm__server_state_stream_impl(ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
+        25 => wire__crate__api__tools__train_message_stream_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1216,6 +1334,22 @@ impl flutter_rust_bridge::IntoIntoDart<crate::cv::ClassificationResults>
     for crate::cv::ClassificationResults
 {
     fn into_into_dart(self) -> crate::cv::ClassificationResults {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::cv::DetectResults {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.results.into_into_dart().into_dart(),
+            self.duration.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::cv::DetectResults {}
+impl flutter_rust_bridge::IntoIntoDart<crate::cv::DetectResults> for crate::cv::DetectResults {
+    fn into_into_dart(self) -> crate::cv::DetectResults {
         self
     }
 }
@@ -1341,6 +1475,17 @@ impl SseEncode for crate::cv::ClassificationResults {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Vec<(String, f32)>>::sse_encode(self.results, serializer);
+        <f64>::sse_encode(self.duration, serializer);
+    }
+}
+
+impl SseEncode for crate::cv::DetectResults {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<crate::cv::object_detect_result::ObjectDetectResult>>::sse_encode(
+            self.results,
+            serializer,
+        );
         <f64>::sse_encode(self.duration, serializer);
     }
 }

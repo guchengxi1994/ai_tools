@@ -1,11 +1,12 @@
 use flutter_rust_bridge::frb;
 
 use crate::{
-    cv::{ClassificationResults, LOAD_MODEL_STATE_SINK},
+    cv::{ClassificationResults, DetectResults, LOAD_MODEL_STATE_SINK},
     frb_generated::StreamSink,
     utils::image_processor::ImageProcessor,
 };
 
+#[deprecated]
 pub fn classify_image(s: String, model_path: String, classes: Option<Vec<String>>) -> String {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let r = rt.block_on(async {
@@ -44,14 +45,15 @@ pub fn classify_image(s: String, model_path: String, classes: Option<Vec<String>
     }
 }
 
+#[deprecated]
 pub fn yolov8_init(model_path: Option<String>) {
     let _ = crate::cv::yolov8::infer::init_yolov8_n(model_path);
 }
 
-/// TODO
-/// remove yolo models in gpu
+#[deprecated]
 pub fn yolov8_cleanup() {}
 
+#[deprecated]
 pub fn yolov8_detect(img: Vec<u8>) -> Vec<crate::cv::object_detect_result::ObjectDetectResult> {
     let r = crate::cv::yolov8::infer::yolov8n_detect(img);
     match r {
@@ -74,7 +76,11 @@ pub fn load_efficientnet(model_path: String) {
     let mut models = crate::cv::CV_MODELS.write().unwrap();
     let r = models.set_efficientnet(model_path);
     match r {
-        Ok(_) => {}
+        Ok(_) => {
+            if let Some(s) = LOAD_MODEL_STATE_SINK.read().unwrap().as_ref() {
+                let _ = s.add("efficientnet => loaded".to_string());
+            }
+        }
         Err(e) => println!("[rust] error  {:?}", e),
     }
 }
@@ -83,7 +89,24 @@ pub fn load_beit(model_path: String) {
     let mut models = crate::cv::CV_MODELS.write().unwrap();
     let r = models.set_beit(model_path);
     match r {
-        Ok(_) => {}
+        Ok(_) => {
+            if let Some(s) = LOAD_MODEL_STATE_SINK.read().unwrap().as_ref() {
+                let _ = s.add("beit => loaded".to_string());
+            }
+        }
+        Err(e) => println!("[rust] error  {:?}", e),
+    }
+}
+
+pub fn load_yolov8(model_path: String) {
+    let mut models = crate::cv::CV_MODELS.write().unwrap();
+    let r = models.set_yolov8(model_path);
+    match r {
+        Ok(_) => {
+            if let Some(s) = LOAD_MODEL_STATE_SINK.read().unwrap().as_ref() {
+                let _ = s.add("yolov8 => loaded".to_string());
+            }
+        }
         Err(e) => println!("[rust] error  {:?}", e),
     }
 }
@@ -101,6 +124,46 @@ pub fn run_classification(img: String, top_n: Option<usize>) -> ClassificationRe
         Err(e) => {
             println!("[rust] error  {:?}", e);
             return ClassificationResults {
+                results: vec![],
+                duration,
+            };
+        }
+    }
+}
+
+pub fn run_detect(img: String) -> DetectResults {
+    let start = std::time::Instant::now();
+    let model = crate::cv::CV_MODELS.read().unwrap();
+    let r = model.run_detect(img);
+    let duration = start.elapsed().as_secs_f64();
+    match r {
+        Ok(r) => DetectResults {
+            results: r,
+            duration,
+        },
+        Err(e) => {
+            println!("[rust] error  {:?}", e);
+            return DetectResults {
+                results: vec![],
+                duration,
+            };
+        }
+    }
+}
+
+pub fn run_detect_in_bytes(img: Vec<u8>) -> DetectResults {
+    let start = std::time::Instant::now();
+    let model = crate::cv::CV_MODELS.read().unwrap();
+    let r = model.run_detect_in_bytes(img);
+    let duration = start.elapsed().as_secs_f64();
+    match r {
+        Ok(r) => DetectResults {
+            results: r,
+            duration,
+        },
+        Err(e) => {
+            println!("[rust] error  {:?}", e);
+            return DetectResults {
                 results: vec![],
                 duration,
             };

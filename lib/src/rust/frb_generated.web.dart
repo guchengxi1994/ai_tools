@@ -66,6 +66,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ClassificationResults dco_decode_classification_results(dynamic raw);
 
   @protected
+  DetectResults dco_decode_detect_results(dynamic raw);
+
+  @protected
   double dco_decode_f_32(dynamic raw);
 
   @protected
@@ -159,6 +162,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   ClassificationResults sse_decode_classification_results(
       SseDeserializer deserializer);
+
+  @protected
+  DetectResults sse_decode_detect_results(SseDeserializer deserializer);
 
   @protected
   double sse_decode_f_32(SseDeserializer deserializer);
@@ -258,6 +264,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_classification_results(
       ClassificationResults self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_detect_results(DetectResults self, SseSerializer serializer);
 
   @protected
   void sse_encode_f_32(double self, SseSerializer serializer);

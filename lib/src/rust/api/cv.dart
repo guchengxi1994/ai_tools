@@ -18,8 +18,6 @@ Future<String> classifyImage(
 Future<void> yolov8Init({String? modelPath}) =>
     RustLib.instance.api.crateApiCvYolov8Init(modelPath: modelPath);
 
-/// TODO
-/// remove yolo models in gpu
 Future<void> yolov8Cleanup() => RustLib.instance.api.crateApiCvYolov8Cleanup();
 
 Future<List<ObjectDetectResult>> yolov8Detect({required List<int> img}) =>
@@ -34,6 +32,15 @@ Future<void> loadEfficientnet({required String modelPath}) =>
 Future<void> loadBeit({required String modelPath}) =>
     RustLib.instance.api.crateApiCvLoadBeit(modelPath: modelPath);
 
+Future<void> loadYolov8({required String modelPath}) =>
+    RustLib.instance.api.crateApiCvLoadYolov8(modelPath: modelPath);
+
 Future<ClassificationResults> runClassification(
         {required String img, BigInt? topN}) =>
     RustLib.instance.api.crateApiCvRunClassification(img: img, topN: topN);
+
+Future<DetectResults> runDetect({required String img}) =>
+    RustLib.instance.api.crateApiCvRunDetect(img: img);
+
+Future<DetectResults> runDetectInBytes({required List<int> img}) =>
+    RustLib.instance.api.crateApiCvRunDetectInBytes(img: img);
