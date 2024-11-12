@@ -7,11 +7,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:toastification/toastification.dart';
 // ignore: depend_on_referenced_packages
 import 'package:logging/logging.dart';
+import 'package:window_manager/window_manager.dart';
 
+import 'app_wrapper.dart';
 import 'src/rust/api/simple.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 必须加上这一行。
+  await windowManager.ensureInitialized();
   await RustLib.init();
   await initLogger();
   Logger.root.level = Level.ALL; // defaults to Level.INFO
@@ -22,6 +26,17 @@ Future<void> main() async {
   });
   IsarDatabase database = IsarDatabase();
   await database.initialDatabase();
+
+  WindowOptions windowOptions = WindowOptions(
+    center: false,
+    backgroundColor: Colors.transparent,
+    skipTaskbar: false,
+    titleBarStyle: TitleBarStyle.hidden,
+  );
+  windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.show();
+    await windowManager.focus();
+  });
 
   runApp(const ProviderScope(
     child: ToastificationWrapper(
@@ -37,7 +52,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: App(),
+      home: AppWrapper(
+        child: App(),
+      ),
     );
   }
 }

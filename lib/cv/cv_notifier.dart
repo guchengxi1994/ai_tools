@@ -67,13 +67,29 @@ class CvState {
   final CvModels activeModel;
   final CvModels? loadingModel;
   late CvTask task;
+  final bool isExpanded;
 
-  CvState({this.activeModel = CvModels.none, this.loadingModel}) {
+  CvState(
+      {this.activeModel = CvModels.none,
+      this.loadingModel,
+      this.isExpanded = false}) {
     task = activeModel.task;
+  }
+
+  CvState copyWith({
+    CvModels? activeModel,
+    CvModels? loadingModel,
+    bool? isExpanded,
+  }) {
+    return CvState(
+      activeModel: activeModel ?? this.activeModel,
+      loadingModel: loadingModel ?? this.loadingModel,
+      isExpanded: isExpanded ?? this.isExpanded,
+    );
   }
 }
 
-class CvNotifier extends AutoDisposeNotifier<CvState> {
+class CvNotifier extends Notifier<CvState> {
   @override
   CvState build() {
     return CvState();
@@ -81,14 +97,21 @@ class CvNotifier extends AutoDisposeNotifier<CvState> {
 
   void changeLoading(CvModels model) {
     if (null != state.loadingModel) return;
-    state = CvState(activeModel: state.activeModel, loadingModel: model);
+    state = CvState(
+        activeModel: state.activeModel,
+        loadingModel: model,
+        isExpanded: state.isExpanded);
   }
 
   void changeModel(CvModels model) {
     if (model == state.activeModel) return;
-    state = CvState(activeModel: model, loadingModel: null);
+    state = CvState(
+        activeModel: model, loadingModel: null, isExpanded: state.isExpanded);
+  }
+
+  changeExpand() {
+    state = state.copyWith(isExpanded: !state.isExpanded);
   }
 }
 
-final cvStateProvider =
-    AutoDisposeNotifierProvider<CvNotifier, CvState>(CvNotifier.new);
+final cvStateProvider = NotifierProvider<CvNotifier, CvState>(CvNotifier.new);

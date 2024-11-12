@@ -5,6 +5,8 @@ import 'package:ai_tools/src/rust/cv.dart';
 import 'package:ai_tools/utils.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
+import 'package:collection/collection.dart';
 
 class ClassficationBox extends StatefulWidget {
   const ClassficationBox({super.key});
@@ -77,11 +79,34 @@ class _ClassficationBoxState extends State<ClassficationBox> {
                   border: Border.all()),
               child: Column(
                 children: (results?.results ?? [])
-                    .map((v) => Row(
-                          children: [
-                            Text(v.$1),
-                            Text(" ${(v.$2 * 100).toStringAsFixed(2)}%")
-                          ],
+                    .mapIndexed((i, v) => Container(
+                          alignment: Alignment.topLeft,
+                          margin: EdgeInsets.only(bottom: 5),
+                          padding: EdgeInsets.all(5),
+                          child: RichText(
+                              text: TextSpan(children: [
+                            TextSpan(
+                                text: "${i + 1}. ",
+                                style: TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold)),
+                            TextSpan(
+                                text: "classname: ",
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold)),
+                            TextSpan(
+                                text: "${v.$1} ",
+                                style: TextStyle(color: Colors.blueAccent)),
+                            TextSpan(
+                                text: ",confidence: ",
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold)),
+                            TextSpan(
+                                text: "${(v.$2 * 100).toStringAsFixed(2)}%",
+                                style: TextStyle(color: Colors.blueAccent))
+                          ])),
                         ))
                     .toList(),
               ),
