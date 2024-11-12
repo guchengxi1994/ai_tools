@@ -1,3 +1,4 @@
+import 'package:ai_tools/src/rust/api/cv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum CvModels { yolov8, efficientnet, beit, none }
@@ -15,6 +16,36 @@ extension CvModelsExtension on CvModels {
         return "Beit";
       default:
         return "None";
+    }
+  }
+
+  Future onSelect(WidgetRef ref) async {
+    ref.read(cvStateProvider.notifier).changeLoading(this);
+    switch (this) {
+      case CvModels.yolov8:
+        await loadYolov8(
+            modelPath:
+                r"D:\github_repo\ai_tools\rust\assets\yolov8n.safetensors");
+        ref.read(cvStateProvider.notifier).changeModel(this);
+        ref.read(cvStateProvider.notifier).changeLoading(CvModels.none);
+        break;
+      case CvModels.efficientnet:
+        await loadEfficientnet(
+            modelPath:
+                r"D:\github_repo\ai_tools\rust\assets\efficientnet-lite4-s.onnx");
+        ref.read(cvStateProvider.notifier).changeModel(this);
+        ref.read(cvStateProvider.notifier).changeLoading(CvModels.none);
+        break;
+      case CvModels.beit:
+        await loadBeit(
+            modelPath:
+                r"D:\github_repo\ai_tools\rust\assets\beit_base_patch16_384.in22k_ft_in22k_in1k.safetensors");
+        ref.read(cvStateProvider.notifier).changeModel(this);
+        ref.read(cvStateProvider.notifier).changeLoading(CvModels.none);
+        break;
+      case CvModels.none:
+        ref.read(cvStateProvider.notifier).changeModel(this);
+        ref.read(cvStateProvider.notifier).changeLoading(CvModels.none);
     }
   }
 

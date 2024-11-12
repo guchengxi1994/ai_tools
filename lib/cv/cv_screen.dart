@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:ai_tools/cv/classfication_box.dart';
 import 'package:ai_tools/cv/cv_notifier.dart';
 import 'package:ai_tools/cv/object_bbox.dart';
+import 'package:ai_tools/cv/selectable_button.dart';
 import 'package:ai_tools/src/rust/api/cv.dart';
 import 'package:ai_tools/src/rust/cv/object_detect_result.dart';
 import 'package:ai_tools/utils.dart';
@@ -66,15 +68,6 @@ class _CvScreenState extends ConsumerState<CvScreen> {
     setState(() {
       _isPopupVisible = !_isPopupVisible;
     });
-
-    // 可选：自动隐藏弹窗
-    if (_isPopupVisible) {
-      Future.delayed(Duration(seconds: 3), () {
-        setState(() {
-          _isPopupVisible = false;
-        });
-      });
-    }
   }
 
   @override
@@ -87,41 +80,43 @@ class _CvScreenState extends ConsumerState<CvScreen> {
           SizedBox.expand(
               child: Padding(
             padding: EdgeInsets.all(20),
-            child: GestureDetector(
-              onTap: filepath == ""
-                  ? null
-                  : () {
-                      results.clear();
-                      _captureAndProcessPng();
-                    },
-              child: MouseRegion(
-                cursor: filepath == ""
-                    ? SystemMouseCursors.forbidden
-                    : SystemMouseCursors.click,
-                child: DropTarget(
-                    onDragDone: (details) {
-                      if (details.files.isNotEmpty) {
-                        logger.info(details.files.first.path);
-                        setState(() {
-                          results.clear();
-                          filepath = details.files.first.path;
-                        });
-                      }
-                    },
-                    child: RepaintBoundary(
-                      key: _key,
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: filepath == ""
-                                ? null
-                                : DecorationImage(
-                                    image: FileImage(File(filepath))),
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.grey[200]),
-                      ),
-                    )),
-              ),
-            ),
+            child: state.activeModel.task == CvTask.objectDetect
+                ? GestureDetector(
+                    onTap: filepath == ""
+                        ? null
+                        : () {
+                            results.clear();
+                            _captureAndProcessPng();
+                          },
+                    child: MouseRegion(
+                      cursor: filepath == ""
+                          ? SystemMouseCursors.forbidden
+                          : SystemMouseCursors.click,
+                      child: DropTarget(
+                          onDragDone: (details) {
+                            if (details.files.isNotEmpty) {
+                              logger.info(details.files.first.path);
+                              setState(() {
+                                results.clear();
+                                filepath = details.files.first.path;
+                              });
+                            }
+                          },
+                          child: RepaintBoundary(
+                            key: _key,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  image: filepath == ""
+                                      ? null
+                                      : DecorationImage(
+                                          image: FileImage(File(filepath))),
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.grey[200]),
+                            ),
+                          )),
+                    ),
+                  )
+                : ClassficationBox(),
           )),
           Positioned(
             top: 0,
@@ -131,59 +126,82 @@ class _CvScreenState extends ConsumerState<CvScreen> {
                 togglePopup();
               },
               child: Container(
-                color: Colors.white.withOpacity(0.5),
-                width: MediaQuery.of(context).size.width,
+                color: Colors.white.withOpacity(0.9),
+                width: MediaQuery.of(context).size.width - 60,
                 child: AnimatedContainer(
-                  height: _isPopupVisible ? 500 : 100,
+                  height: _isPopupVisible ? 300 : 50,
                   duration: Duration(milliseconds: 300),
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: 20, top: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Object Detection"),
-                        Wrap(
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ElevatedButton(
-                              child: Text('Yolov8'),
-                              onPressed: () {
-                                loadYolov8(
-                                        modelPath:
-                                            r"D:\github_repo\ai_tools\rust\assets\yolov8n.safetensors")
-                                    .then((_) {
-                                  ref
-                                      .read(cvStateProvider.notifier)
-                                      .changeModel(CvModels.yolov8);
-                                });
-                              },
+                    padding: _isPopupVisible
+                        ? EdgeInsets.only(bottom: 20, top: 20)
+                        : EdgeInsets.zero,
+                    child: _isPopupVisible
+                        ? Row(
+                            // mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                  child: SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Object Detection",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Wrap(
+                                      alignment: WrapAlignment.start,
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: [
+                                        SelectableButton(
+                                            model: CvModels.yolov8),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    Text(
+                                      "Classification",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Wrap(
+                                      alignment: WrapAlignment.start,
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: [
+                                        SelectableButton(
+                                            model: CvModels.efficientnet),
+                                        SelectableButton(model: CvModels.beit),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              )),
+                              SizedBox(
+                                width: 50,
+                                child: IconButton(
+                                    onPressed: () {},
+                                    icon: Container(
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(40),
+                                          color: Colors.blueAccent.shade100),
+                                      width: 30,
+                                      height: 30,
+                                      child: Icon(Icons.play_arrow),
+                                    )),
+                              )
+                            ],
+                          )
+                        : Center(
+                            child: Text(
+                              "click to show options",
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
-                          ],
-                        ),
-                        Text("Classification"),
-                        Wrap(
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ElevatedButton(
-                              child: Text('EfficientNet'),
-                              onPressed: () {
-                                ref
-                                    .read(cvStateProvider.notifier)
-                                    .changeModel(CvModels.efficientnet);
-                              },
-                            ),
-                            ElevatedButton(
-                              child: Text('Beit'),
-                              onPressed: () {
-                                ref
-                                    .read(cvStateProvider.notifier)
-                                    .changeModel(CvModels.beit);
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
                   ),
                 ),
               ),
