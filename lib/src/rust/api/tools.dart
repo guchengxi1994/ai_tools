@@ -10,5 +10,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 Stream<TrainMessage> trainMessageStream() =>
     RustLib.instance.api.crateApiToolsTrainMessageStream();
 
+Stream<Uint8List> trainChartStream() =>
+    RustLib.instance.api.crateApiToolsTrainChartStream();
+
 Future<void> trainAMlp({required String csvPath}) =>
     RustLib.instance.api.crateApiToolsTrainAMlp(csvPath: csvPath);

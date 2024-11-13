@@ -2,12 +2,19 @@ use flutter_rust_bridge::frb;
 
 use crate::{
     frb_generated::StreamSink,
-    tools::{TrainMessage, TRAIN_MESSAGE_SINK},
+    tools::{TrainMessage, TRAIN_CHART_SINK, TRAIN_MESSAGE_SINK},
 };
 
 #[frb(sync)]
 pub fn train_message_stream(s: StreamSink<TrainMessage>) -> anyhow::Result<()> {
     let mut stream = TRAIN_MESSAGE_SINK.write().unwrap();
+    *stream = Some(s);
+    anyhow::Ok(())
+}
+
+#[frb(sync)]
+pub fn train_chart_stream(s: StreamSink<Vec<u8>>) -> anyhow::Result<()> {
+    let mut stream = TRAIN_CHART_SINK.write().unwrap();
     *stream = Some(s);
     anyhow::Ok(())
 }

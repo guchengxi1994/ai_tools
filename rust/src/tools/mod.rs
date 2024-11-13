@@ -1,3 +1,5 @@
+use chart_core::new_line_chart;
+use chart_core::charts::line_chart::LineChartData;
 use std::sync::RwLock;
 
 use candle_core::DType;
@@ -31,7 +33,11 @@ impl TrainMessage {
 
 pub static TRAIN_MESSAGE_SINK: RwLock<Option<StreamSink<TrainMessage>>> = RwLock::new(None);
 
+pub static TRAIN_CHART_SINK: RwLock<Option<StreamSink<Vec<u8>>>> = RwLock::new(None);
+
 pub fn train_a_mlp(csv_path: String) -> anyhow::Result<()> {
+    let mut train_losses = Vec::new();
+    let mut train_epochs = Vec::new();
     let d = candle_core::Device::cuda_if_available(0)?;
     let vm = candle_nn::VarMap::new();
     let vb = candle_nn::VarBuilder::from_varmap(&vm, candle_core::DType::F32, &d);
@@ -53,9 +59,26 @@ pub fn train_a_mlp(csv_path: String) -> anyhow::Result<()> {
         let loss = loss::mse(&logits.to_dtype(DType::F32)?, &train_label)?;
         adam.backward_step(&loss)?;
         if i % 100 == 0 {
+            train_epochs.push(format!("{}", i));
+            train_losses.push(loss.to_scalar::<f32>()?);
+
             message.loss = loss.to_scalar::<f32>()?;
             message.epoch = i;
             message.message = "".to_string();
+            if let Some(sink) = TRAIN_CHART_SINK.read().unwrap().as_ref() {
+                let chart = new_line_chart(
+                    "mlp".to_string(),
+                    LineChartData {
+                        x: train_epochs.clone(),
+                        y: train_losses.clone(),
+                    },
+                );
+
+                if let Some(c) = chart {
+                    let _ = sink.add(c);
+                }
+            }
+
             if let Some(sink) = TRAIN_MESSAGE_SINK.read().unwrap().as_ref() {
                 let _ = sink.add(message.clone());
             }

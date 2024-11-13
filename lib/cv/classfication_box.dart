@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:collection/collection.dart';
 
+/// TODO typo error in the name
+/// [ClassficationBox] ✖️  ---> [ClassificationBox] ✔️
 class ClassficationBox extends StatefulWidget {
   const ClassficationBox({super.key});
 

@@ -29,7 +29,6 @@ dependencies:
   riverpod: ^2.5.1
   rust_lib_ai_tools:
     path: rust_builder
-  syncfusion_flutter_charts: ^27.1.58
   toastification: ^2.3.0
   window_manager: ^0.4.3
   

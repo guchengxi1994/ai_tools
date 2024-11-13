@@ -1,9 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:ai_tools/src/rust/api/tools.dart';
-import 'package:ai_tools/src/rust/tools.dart';
-import 'package:ai_tools/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animation_progress_bar/flutter_animation_progress_bar.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 
 class ToolsScreen extends StatefulWidget {
   const ToolsScreen({super.key});
@@ -13,19 +11,25 @@ class ToolsScreen extends StatefulWidget {
 }
 
 class _ToolsScreenState extends State<ToolsScreen> {
-  final stream = trainMessageStream();
-  List<TrainMessage> messages = [];
+  // final stream = trainMessageStream();
+  final chartStream = trainChartStream();
+  // List<TrainMessage> messages = [];
   double current = 0;
+  // ignore: avoid_init_to_null
+  Uint8List? chartData = null;
 
   @override
   void initState() {
     super.initState();
-    stream.listen((event) {
-      logger.info("loss ${event.loss}");
+    chartStream.listen((event) {
       setState(() {
-        messages.add(event);
-        current = event.epoch.toInt() / 10000 * 100;
+        chartData = event;
       });
+      // logger.info("loss ${event.loss}");
+      // setState(() {
+      //   messages.add(event);
+      //   current = event.epoch.toInt() / 10000 * 100;
+      // });
     });
   }
 
@@ -34,29 +38,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
     return Scaffold(
       body: Column(
         children: [
-          if (messages.isNotEmpty)
-            SfCartesianChart(
-              primaryXAxis: NumericAxis(
-                name: "epoch",
-                title: AxisTitle(text: "epoch"),
-              ),
-              primaryYAxis: NumericAxis(
-                name: "loss",
-                title: AxisTitle(text: "loss"),
-              ),
-              series: <CartesianSeries>[
-                LineSeries<TrainMessage, double>(
-                    dataSource: messages,
-                    xValueMapper: (TrainMessage e, _) => e.epoch.toInt() * 1.0,
-                    yValueMapper: (TrainMessage e, _) => e.loss)
-              ],
-            ),
-          if (messages.isNotEmpty)
-            FAProgressBar(
-              direction: Axis.horizontal,
-              displayText: "%",
-              currentValue: current,
-            ),
+          if (chartData != null) Image.memory(chartData!),
           ElevatedButton(
               onPressed: () {
                 trainAMlp(
