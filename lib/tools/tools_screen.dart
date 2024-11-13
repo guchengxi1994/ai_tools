@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:ai_tools/src/rust/api/tools.dart';
 import 'package:flutter/material.dart';
@@ -16,20 +18,25 @@ class _ToolsScreenState extends State<ToolsScreen> {
   // List<TrainMessage> messages = [];
   double current = 0;
   // ignore: avoid_init_to_null
-  Uint8List? chartData = null;
+  late ui.Image? image = null;
+
+  Future<ui.Image> uint8ListToImage(Uint8List uint8list) async {
+    final Completer<ui.Image> completer = Completer();
+
+    ui.decodeImageFromList(uint8list, (ui.Image img) {
+      completer.complete(img);
+    });
+
+    return completer.future;
+  }
 
   @override
   void initState() {
     super.initState();
-    chartStream.listen((event) {
-      setState(() {
-        chartData = event;
-      });
-      // logger.info("loss ${event.loss}");
-      // setState(() {
-      //   messages.add(event);
-      //   current = event.epoch.toInt() / 10000 * 100;
-      // });
+    chartStream.listen((event) async {
+      image = await uint8ListToImage(event);
+
+      setState(() {});
     });
   }
 
@@ -38,7 +45,10 @@ class _ToolsScreenState extends State<ToolsScreen> {
     return Scaffold(
       body: Column(
         children: [
-          if (chartData != null) Image.memory(chartData!),
+          if (image != null)
+            CustomPaint(
+              painter: CustomImagePainter(image!),
+            ),
           ElevatedButton(
               onPressed: () {
                 trainAMlp(
@@ -49,4 +59,20 @@ class _ToolsScreenState extends State<ToolsScreen> {
       ),
     );
   }
+}
+
+class CustomImagePainter extends CustomPainter {
+  final ui.Image image;
+
+  CustomImagePainter(this.image);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint();
+    canvas.drawImage(image, Offset.zero, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) =>
+      this != oldDelegate;
 }
