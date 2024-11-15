@@ -35,8 +35,3 @@ String formatPrompt({required ChatMessages messages, String? system}) =>
 String formatPromptWithThoughtChain({required ChatMessages messages}) =>
     RustLib.instance.api
         .crateApiLlmFormatPromptWithThoughtChain(messages: messages);
-
-Future<void> runServer({String? modelPath, BigInt? port}) =>
-    RustLib.instance.api.crateApiLlmRunServer(modelPath: modelPath, port: port);
-
-Future<void> stopServer() => RustLib.instance.api.crateApiLlmStopServer();

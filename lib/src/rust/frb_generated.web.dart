@@ -10,6 +10,7 @@ import 'api/cv.dart';
 import 'api/llm.dart';
 import 'api/simple.dart';
 import 'api/tools.dart';
+import 'api/web_server.dart';
 import 'cv.dart';
 import 'cv/object_detect_result.dart';
 import 'dart:async';

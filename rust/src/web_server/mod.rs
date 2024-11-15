@@ -25,6 +25,21 @@ pub static SERVER_STATE_SINK: RwLock<Option<StreamSink<String>>> = RwLock::new(N
 static STOP_NOTIFY: Lazy<Arc<Notify>> = Lazy::new(|| Arc::new(Notify::new()));
 
 pub async fn load_model(model_path: Option<String>) -> anyhow::Result<()> {
+    {
+        let b = check_llm_model_loaded().await;
+        if b{
+            if let Some(s) = SERVER_STATE_SINK.read().unwrap().as_ref() {
+                let _ = s.add("model has been loaded".to_string());
+            }
+            return Ok(());
+        }
+    }
+    
+
+    if let Some(s) = SERVER_STATE_SINK.read().unwrap().as_ref() {
+        let _ = s.add("init".to_string());
+    }
+
     let p = if model_path.is_some() {
         model_path.unwrap()
     } else {
@@ -55,7 +70,15 @@ pub async fn load_model(model_path: Option<String>) -> anyhow::Result<()> {
 
     *global_model = Some(pipeline);
 
+    if let Some(s) = SERVER_STATE_SINK.read().unwrap().as_ref() {
+        let _ = s.add("model loaded".to_string());
+    }
+
     anyhow::Ok(())
+}
+
+pub async fn check_llm_model_loaded() -> bool {
+    TOKIO_QWEN_MODEL.read().await.is_some()
 }
 
 pub fn stop_server() {
@@ -71,36 +94,29 @@ pub fn stop_server() {
 }
 
 #[allow(unused_assignments)]
-pub async fn start_server(model_path: Option<String>, port: Option<usize>) -> std::io::Result<()> {
+pub async fn start_server(port: Option<usize>) -> std::io::Result<()> {
+    if let Some(s) = SERVER_STATE_SINK.read().unwrap().as_ref() {
+        let _ = s.add("server init".to_string());
+    }
     let port = if port.is_some() { port.unwrap() } else { 8080 };
+
+    let server = HttpServer::new(move || App::new().route("/sse", web::post().to(sse)))
+        .bind(format!("127.0.0.1:{}", port))?
+        .run();
+
+    let notify = STOP_NOTIFY.clone();
+    let server_handler = server.handle().clone();
+
     if let Some(s) = SERVER_STATE_SINK.read().unwrap().as_ref() {
-        let _ = s.add("init".to_string());
+        let _ = s.add("server start".to_string());
     }
 
-    let r = load_model(model_path).await;
-    if let Some(s) = SERVER_STATE_SINK.read().unwrap().as_ref() {
-        let _ = s.add("model loaded".to_string());
-    }
-    match r {
-        Ok(_) => {
-            let server = HttpServer::new(move || App::new().route("/sse", web::post().to(sse)))
-                .bind(format!("127.0.0.1:{}", port))?
-                .run();
+    tokio::spawn(async move {
+        notify.notified().await;
+        server_handler.stop(true).await;
+    });
 
-            let notify = STOP_NOTIFY.clone();
-            let server_handler = server.handle().clone();
-
-            tokio::spawn(async move {
-                notify.notified().await;
-                server_handler.stop(true).await;
-            });
-
-            server.await
-        }
-        Err(_e) => {
-            panic!("load model failed {:?}", _e);
-        }
-    }
+    server.await
 }
 
 #[allow(unused_imports)]

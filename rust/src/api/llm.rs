@@ -64,14 +64,3 @@ pub fn format_prompt(messages: ChatMessages, system: Option<String>) -> String {
 pub fn format_prompt_with_thought_chain(messages: ChatMessages) -> String {
     messages.format_with_thought_chain()
 }
-
-pub fn run_server(model_path: Option<String>, port: Option<usize>) {
-    let rt = tokio::runtime::Runtime::new().unwrap();
-    rt.block_on(async {
-        let _ = crate::web_server::start_server(model_path, port).await;
-    });
-}
-
-pub fn stop_server() {
-    crate::web_server::stop_server();
-}

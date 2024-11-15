@@ -7,6 +7,7 @@ import 'api/cv.dart';
 import 'api/llm.dart';
 import 'api/simple.dart';
 import 'api/tools.dart';
+import 'api/web_server.dart';
 import 'cv.dart';
 import 'cv/object_detect_result.dart';
 import 'dart:async';
@@ -75,7 +76,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.5.1';
 
   @override
-  int get rustContentHash => 956286584;
+  int get rustContentHash => -1080542399;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -128,11 +129,7 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiLlmQwen2PromptChat({required String prompt});
 
-  Future<void> crateApiLlmRunServer({String? modelPath, BigInt? port});
-
   Stream<String> crateApiLlmServerStateStream();
-
-  Future<void> crateApiLlmStopServer();
 
   String crateApiSimpleGreet({required String name});
 
@@ -145,6 +142,14 @@ abstract class RustLibApi extends BaseApi {
   Stream<Uint8List> crateApiToolsTrainChartStream();
 
   Stream<TrainMessage> crateApiToolsTrainMessageStream();
+
+  bool crateApiWebServerCheckModalStatus();
+
+  Future<void> crateApiWebServerLoadLlmModel({required String modelPath});
+
+  Future<void> crateApiWebServerRunServer({BigInt? port});
+
+  Future<void> crateApiWebServerStopServer();
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -580,38 +585,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateApiLlmRunServer({String? modelPath, BigInt? port}) {
-    return handler.executeNormal(NormalTask(
-      callFfi: (port_) {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_opt_String(modelPath, serializer);
-        sse_encode_opt_box_autoadd_usize(port, serializer);
-        pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 18, port: port_);
-      },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_unit,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiLlmRunServerConstMeta,
-      argValues: [modelPath, port],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiLlmRunServerConstMeta => const TaskConstMeta(
-        debugName: "run_server",
-        argNames: ["modelPath", "port"],
-      );
-
-  @override
   Stream<String> crateApiLlmServerStateStream() {
     final s = RustStreamSink<String>();
     handler.executeSync(SyncTask(
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_StreamSink_String_Sse(s, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 19)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 18)!;
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -631,35 +611,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateApiLlmStopServer() {
-    return handler.executeNormal(NormalTask(
-      callFfi: (port_) {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 20, port: port_);
-      },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_unit,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiLlmStopServerConstMeta,
-      argValues: [],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiLlmStopServerConstMeta => const TaskConstMeta(
-        debugName: "stop_server",
-        argNames: [],
-      );
-
-  @override
   String crateApiSimpleGreet({required String name}) {
     return handler.executeSync(SyncTask(
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(name, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 21)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 19)!;
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -682,7 +639,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 22, port: port_);
+            funcId: 20, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -705,7 +662,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 23, port: port_);
+            funcId: 21, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -729,7 +686,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(csvPath, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 24, port: port_);
+            funcId: 22, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -753,7 +710,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_StreamSink_list_prim_u_8_strict_Sse(s, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 25)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 23)!;
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -779,7 +736,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_StreamSink_train_message_Sse(s, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 26)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 24)!;
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -796,6 +753,102 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(
         debugName: "train_message_stream",
         argNames: ["s"],
+      );
+
+  @override
+  bool crateApiWebServerCheckModalStatus() {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 25)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_bool,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiWebServerCheckModalStatusConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiWebServerCheckModalStatusConstMeta =>
+      const TaskConstMeta(
+        debugName: "check_modal_status",
+        argNames: [],
+      );
+
+  @override
+  Future<void> crateApiWebServerLoadLlmModel({required String modelPath}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(modelPath, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 26, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiWebServerLoadLlmModelConstMeta,
+      argValues: [modelPath],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiWebServerLoadLlmModelConstMeta =>
+      const TaskConstMeta(
+        debugName: "load_llm_model",
+        argNames: ["modelPath"],
+      );
+
+  @override
+  Future<void> crateApiWebServerRunServer({BigInt? port}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_opt_box_autoadd_usize(port, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 27, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiWebServerRunServerConstMeta,
+      argValues: [port],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiWebServerRunServerConstMeta => const TaskConstMeta(
+        debugName: "run_server",
+        argNames: ["port"],
+      );
+
+  @override
+  Future<void> crateApiWebServerStopServer() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 28, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiWebServerStopServerConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiWebServerStopServerConstMeta =>
+      const TaskConstMeta(
+        debugName: "stop_server",
+        argNames: [],
       );
 
   @protected

@@ -1,5 +1,5 @@
-use chart_core::new_line_chart;
 use chart_core::charts::line_chart::LineChartData;
+use chart_core::new_line_chart;
 use std::sync::RwLock;
 
 use candle_core::DType;

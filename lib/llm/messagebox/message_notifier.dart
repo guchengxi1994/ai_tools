@@ -1,6 +1,7 @@
 import 'package:ai_tools/isar/chat_history.dart';
 import 'package:ai_tools/isar/database.dart';
 import 'package:ai_tools/src/rust/api/llm.dart';
+import 'package:ai_tools/src/rust/api/web_server.dart';
 import 'package:ai_tools/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,15 +25,31 @@ class MessageNotifier extends AutoDisposeNotifier<MessageState> {
     state = state.copyWith(serverState: s);
   }
 
+  changeLLMState(LLMState s) {
+    if (s == state.llmState) {
+      return;
+    }
+
+    state = state.copyWith(llmState: s);
+  }
+
+  void runLLM() {
+    changeLLMState(LLMState.loading);
+    loadLlmModel(
+            modelPath:
+                r"D:\github_repo\ai_tools\rust\assets\Qwen2___5-0___5B-Instruct")
+        .then((_) {
+      changeLLMState(LLMState.loaded);
+    });
+  }
+
   void runserver() {
     if (state.serverState == ServerState.running ||
         state.serverState == ServerState.loading) {
       return;
     }
 
-    runServer(
-        modelPath:
-            r"D:\github_repo\ai_tools\rust\assets\Qwen2___5-0___5B-Instruct");
+    runServer();
   }
 
   void stopserver() {

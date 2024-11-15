@@ -30,19 +30,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           .updateMessageBox(ChatResponse.fromRustChatResponse(event));
     });
     stateStream.listen((event) {
-      if (event == "init") {
-        ToastUtils.info(null, title: "model loading");
+      if (event == "server init") {
+        ToastUtils.info(null, title: "starting server");
         ref
             .read(messageProvider.notifier)
             .changeServerState(ServerState.loading);
-      } else if (event == "model loaded") {
-        ToastUtils.info(null, title: "server ready");
+      } else if (event == "none") {
+        ref.read(messageProvider.notifier).changeServerState(ServerState.none);
+      } else if (event == "server start") {
+        ToastUtils.info(null, title: "server started");
         ref
             .read(messageProvider.notifier)
             .changeServerState(ServerState.running);
       } else {
-        ToastUtils.info(null, title: "server stopped");
-        ref.read(messageProvider.notifier).changeServerState(ServerState.none);
+        ToastUtils.info(null, title: event);
       }
     });
   }
@@ -129,6 +130,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           : state.serverState == ServerState.loading
                               ? Icon(Icons.hourglass_empty)
                               : Icon(Icons.play_arrow),
+                    )),
+                IconButton(
+                    onPressed: () {
+                      ref.read(messageProvider.notifier).runLLM();
+                    },
+                    icon: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(40),
+                          color: Colors.blueAccent.shade100),
+                      width: 30,
+                      height: 30,
+                      child: state.llmState == LLMState.loaded
+                          ? Icon(Icons.stop)
+                          : state.llmState == LLMState.loading
+                              ? Icon(Icons.hourglass_empty)
+                              : Icon(Icons.model_training_outlined),
                     ))
               ],
             ),

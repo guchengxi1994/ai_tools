@@ -740,9 +740,9 @@ dependencies = [
 
 [[package]]
 name = "candle-core"
-version = "0.7.2"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e1a39b963e261c58017edf2007e5b63425ad21538aaaf51fe23d1da41703701"
+checksum = "e61e6a12c4b0660f105c11cbce42a5b33a392e73caaf465261b24210878fbe0e"
 dependencies = [
  "byteorder",
  "candle-kernels",
@@ -757,24 +757,26 @@ dependencies = [
  "rayon",
  "safetensors",
  "thiserror",
+ "ug",
+ "ug-cuda",
  "yoke",
  "zip",
 ]
 
 [[package]]
 name = "candle-kernels"
-version = "0.7.2"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "539cbfbf2d1d68a6ed97115e579c77c98f8ed0cfe7edbc6d7d30d2ac0c9e3d50"
+checksum = "7a8ea76010d0ab096477f52aa7adfa36ac3ed43c353cef1b11d6b4a62d84f7a9"
 dependencies = [
  "bindgen_cuda",
 ]
 
 [[package]]
 name = "candle-nn"
-version = "0.7.2"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "898f8d21b8bdf559a1c8635e2db8386b2134015cd3003c18c1a30a22a67daec6"
+checksum = "2032a3a41999801c5997ee7896ce816c361c49988435dedb7830634293c0798e"
 dependencies = [
  "candle-core",
  "half",
@@ -787,9 +789,9 @@ dependencies = [
 
 [[package]]
 name = "candle-onnx"
-version = "0.7.2"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4521d9bb38c65b6ec97d3feebdd1969355788e5479f1def0e9985b79ac05e072"
+checksum = "857d22c6fbeca76f16a5bcb8439b8ded2244563fc30f7e54973210eb62ff1d2b"
 dependencies = [
  "candle-core",
  "candle-nn",
@@ -799,9 +801,9 @@ dependencies = [
 
 [[package]]
 name = "candle-transformers"
-version = "0.7.2"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06b8a130a8ac1d1e20696d89f7a52948902e037ad0eec085fceb77021007cfee"
+checksum = "b88bf4dbf13c3fa0a51624e4a2bf4db1d97596bbefd471424892a0b852013b7c"
 dependencies = [
  "byteorder",
  "candle-core",
@@ -4070,6 +4072,33 @@ name = "ucd-trie"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2896d95c02a80c6d6a5d6e953d479f5ddf2dfdb6a244441010e373ac0fb88971"
+
+[[package]]
+name = "ug"
+version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c4eef2ebfc18c67a6dbcacd9d8a4d85e0568cc58c82515552382312c2730ea13"
+dependencies = [
+ "half",
+ "num",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "ug-cuda"
+version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c4dcab280ad0ef3957e153a82dcad608c954d02cf253b695322f502d1f8902e"
+dependencies = [
+ "cudarc",
+ "half",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "ug",
+]
 
 [[package]]
 name = "unicode-bidi"

@@ -13,10 +13,10 @@ actix-cors = "0.6.4"
 actix-web = "4"
 actix-web-actors = "4.2.0"
 anyhow = "1.0.91"
-candle-core = { version = "=0.7.2", features = ['cuda'] }
-candle-nn = { version = "=0.7.2", features = ['cuda'] }
-candle-onnx = { version = "=0.7.2" }
-candle-transformers = { version = "=0.7.2", features = ['cuda'] }
+candle-core = { version = "=0.8.0", features = ['cuda'] }
+candle-nn = { version = "=0.8.0", features = ['cuda'] }
+candle-onnx = { version = "=0.8.0" }
+candle-transformers = { version = "=0.8.0", features = ['cuda'] }
 candle_dataset_loader = {git = "https://github.com/guchengxi1994/candle_dataset_loader" }
 csv = "1.3.0"
 env_logger = "0.11.5"
