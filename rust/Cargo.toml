@@ -37,6 +37,14 @@ tokenizers = "0.20.1"
 tokio = { version = "1.41.0", features = ["full"] }
 uuid = { features = ["v4"], version = "1.11.0"}
 
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = [
+    "winuser",
+    "libloaderapi",
+    "processthreadsapi",
+] }
+winreg = "0.52.0"
+
 
 [workspace]
 resolver = "2"
