@@ -33,6 +33,15 @@ mod tests {
         cmd.spawn().expect("Failed to start");
     }
 
+    #[test]
+    fn lock_windows(){
+        use windows::Win32::System::Shutdown::LockWorkStation;
+        unsafe {
+            let r = LockWorkStation();
+            println!("{:?}", r);
+        }
+    }
+
 
     // where /R d:\dart dart.exe
     #[test]
@@ -61,5 +70,28 @@ mod tests {
             }
         }
         result
+    }
+
+    #[test]
+    fn test_windows_embedded_ocr()-> anyhow::Result<()>{
+        use windows::{
+            core::*,
+            Graphics::Imaging::BitmapDecoder,
+            Media::Ocr::OcrEngine,
+            Storage::{FileAccessMode, StorageFile},
+        };
+
+        let file = StorageFile::GetFileFromPathAsync(&HSTRING::from(r"C:\Users\xiaoshuyui\Desktop\屏幕截图 2024-10-02 211700.png"))?.get()?;
+        let stream = file.OpenAsync(FileAccessMode::Read)?.get()?;
+
+        let decode = BitmapDecoder::CreateAsync(&stream)?.get()?;
+        let bitmap = decode.GetSoftwareBitmapAsync()?.get()?;
+
+        let engine = OcrEngine::TryCreateFromUserProfileLanguages()?;
+        let result = engine.RecognizeAsync(&bitmap)?.get()?;
+
+        println!("{}", result.Text()?);
+
+        anyhow::Ok(())
     }
 }
