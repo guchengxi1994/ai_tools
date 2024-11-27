@@ -4,6 +4,7 @@ mod constant;
 mod cv;
 mod frb_generated;
 mod llm;
+mod pipeline;
 mod tests;
 mod tools;
 mod utils;

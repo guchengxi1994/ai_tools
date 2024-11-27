@@ -1,4 +1,6 @@
 use std::marker::PhantomData;
+use std::sync::Arc;
+use std::sync::Mutex;
 use std::sync::RwLock;
 
 use super::{model::ModelRun, token_output_stream::TokenOutputStream};
@@ -218,6 +220,78 @@ where
         Ok(())
     }
 
+    pub fn run_with_cb(
+        &mut self,
+        prompt: &str,
+        sample_len: usize,
+        mut cb: Box<dyn FnMut(&str)>,
+    ) -> anyhow::Result<()> {
+        use std::io::Write;
+        self.tokenizer.clear();
+        self.model.clear_kv_cache();
+        let mut tokens = self
+            .tokenizer
+            .tokenizer()
+            .encode(prompt, true)
+            .map_err(anyhow::Error::msg)?
+            .get_ids()
+            .to_vec();
+        for &t in tokens.iter() {
+            if let Some(t) = self.tokenizer.next_token(t)? {
+                print!("{t}")
+            }
+        }
+        std::io::stdout().flush()?;
+
+        let mut generated_tokens = 0usize;
+        let eos_token = match self.tokenizer.get_token("<|endoftext|>") {
+            Some(token) => token,
+            None => anyhow::bail!("cannot find the <|endoftext|> token"),
+        };
+        let start_gen = std::time::Instant::now();
+        for index in 0..sample_len {
+            let context_size = if index > 0 { 1 } else { tokens.len() };
+            let start_pos = tokens.len().saturating_sub(context_size);
+            let ctxt = &tokens[start_pos..];
+            let input = Tensor::new(ctxt, &self.device)?.unsqueeze(0)?;
+            let logits = self.model.forward(&input, start_pos)?;
+            let logits = logits
+                .squeeze(0)?
+                .squeeze(0)?
+                .to_dtype(candle_core::DType::F32)?;
+            let logits = if self.repeat_penalty == 1. {
+                logits
+            } else {
+                let start_at = tokens.len().saturating_sub(self.repeat_last_n);
+                candle_transformers::utils::apply_repeat_penalty(
+                    &logits,
+                    self.repeat_penalty,
+                    &tokens[start_at..],
+                )?
+            };
+
+            let next_token = self.logits_processor.sample(&logits)?;
+            tokens.push(next_token);
+            generated_tokens += 1;
+            if next_token == eos_token {
+                break;
+            }
+            if let Some(t) = self.tokenizer.next_token(next_token)? {
+                cb(&t);
+            }
+        }
+        let dt = start_gen.elapsed();
+        if let Some(rest) = self.tokenizer.decode_rest().map_err(anyhow::Error::msg)? {
+            print!("{rest}");
+        }
+        std::io::stdout().flush()?;
+        println!(
+            "\n{generated_tokens} tokens generated ({:.2} token/s)",
+            generated_tokens as f64 / dt.as_secs_f64(),
+        );
+        Ok(())
+    }
+
     pub async fn run_in_actix(
         &mut self,
         prompt: &str,
@@ -366,6 +440,36 @@ pub async fn qwen2_prompt_chat_async(p: String) -> anyhow::Result<()> {
         let _ = s.add(chat_response.clone());
     }
     anyhow::Ok(())
+}
+
+/// to pipeline
+pub fn chat_with_cb(prompt: String, on_stream: Option<fn(&str)>) -> String {
+    let result = Arc::new(Mutex::new(String::new()));
+
+    let callback = Box::new({
+        let result = Arc::clone(&result); // 克隆 Arc 引用
+        move |s: &str| {
+            let mut locked_result = result.lock().unwrap(); // 锁定 Mutex
+            *locked_result += s; // 修改字符串
+            if let Some(f) = on_stream {
+                f(s);
+            }
+        }
+    });
+
+    let rt = tokio::runtime::Runtime::new().unwrap();
+    rt.block_on(async {
+        let mut global_model = TOKIO_QWEN_MODEL.write().await;
+        if !global_model.is_none() {
+            println!("[rust-llm] use global model");
+            let _ = global_model
+                .as_mut()
+                .unwrap()
+                .run_with_cb(&prompt, 1024, callback);
+        }
+    });
+
+    return result.lock().unwrap().to_string();
 }
 
 /// expose to flutter

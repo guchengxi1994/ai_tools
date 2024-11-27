@@ -16,9 +16,13 @@ mod tests {
 
                     if let Ok(subkey) = subkey {
                         let display_name: Result<String, Error> = subkey.get_value("DisplayName");
-                        let installed_path: Result<String, Error> = subkey.get_value("InstallLocation");
-                        let display_icon : Result<String, Error> = subkey.get_value("DisplayIcon");
-                        if matches!(display_name, Ok(_)) && matches!(installed_path, Ok(_)) && matches!(display_icon, Ok(_)) {
+                        let installed_path: Result<String, Error> =
+                            subkey.get_value("InstallLocation");
+                        let display_icon: Result<String, Error> = subkey.get_value("DisplayIcon");
+                        if matches!(display_name, Ok(_))
+                            && matches!(installed_path, Ok(_))
+                            && matches!(display_icon, Ok(_))
+                        {
                             println!("{:?}: {:?}", display_name, installed_path);
                         }
                     }
@@ -34,14 +38,13 @@ mod tests {
     }
 
     #[test]
-    fn lock_windows(){
+    fn lock_windows() {
         use windows::Win32::System::Shutdown::LockWorkStation;
         unsafe {
             let r = LockWorkStation();
             println!("{:?}", r);
         }
     }
-
 
     // where /R d:\dart dart.exe
     #[test]
@@ -73,7 +76,7 @@ mod tests {
     }
 
     #[test]
-    fn test_windows_embedded_ocr()-> anyhow::Result<()>{
+    fn test_windows_embedded_ocr() -> anyhow::Result<()> {
         use windows::{
             core::*,
             Graphics::Imaging::BitmapDecoder,
@@ -81,7 +84,10 @@ mod tests {
             Storage::{FileAccessMode, StorageFile},
         };
 
-        let file = StorageFile::GetFileFromPathAsync(&HSTRING::from(r"C:\Users\xiaoshuyui\Desktop\屏幕截图 2024-10-02 211700.png"))?.get()?;
+        let file = StorageFile::GetFileFromPathAsync(&HSTRING::from(
+            r"C:\Users\xiaoshuyui\Desktop\屏幕截图 2024-10-02 211700.png",
+        ))?
+        .get()?;
         let stream = file.OpenAsync(FileAccessMode::Read)?.get()?;
 
         let decode = BitmapDecoder::CreateAsync(&stream)?.get()?;

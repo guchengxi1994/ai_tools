@@ -27,14 +27,13 @@ static STOP_NOTIFY: Lazy<Arc<Notify>> = Lazy::new(|| Arc::new(Notify::new()));
 pub async fn load_model(model_path: Option<String>) -> anyhow::Result<()> {
     {
         let b = check_llm_model_loaded().await;
-        if b{
+        if b {
             if let Some(s) = SERVER_STATE_SINK.read().unwrap().as_ref() {
                 let _ = s.add("model has been loaded".to_string());
             }
             return Ok(());
         }
     }
-    
 
     if let Some(s) = SERVER_STATE_SINK.read().unwrap().as_ref() {
         let _ = s.add("init".to_string());

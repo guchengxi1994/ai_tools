@@ -1,0 +1,10 @@
+<pipeline>
+    <action class="CheckOrRunModelNode" inputId="model-name" outputId="" name="判断大模型是否运行,没有运行的话就运行一下">
+    </action>
+    <action class="RewriteQuestionNode" inputId="prompt" outputId="rewrite" name="重写问题">
+    </action>
+    <action class="AnswerQuestionNode" inputId="rewrite" outputId="result" name="回答问题">
+    </action>
+    <action class="RethinkNode" inputId="" outputId="rethink" name="反向审视问题和答案">
+    </action>
+</pipeline>
