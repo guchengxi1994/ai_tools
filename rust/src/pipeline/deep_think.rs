@@ -100,7 +100,7 @@ inventory::submit! {
 }
 
 pub fn deep_think_execute(prompt: String, model_name: Option<String>) -> anyhow::Result<()> {
-    let data = include_bytes!(r"rewrite-question-pipeline.xml");
+    let data = include_bytes!(r"deep-think-pipeline.xml");
     let pipeline = parse_xml(std::str::from_utf8(data)?)?;
     for action in &pipeline.actions {
         println!("{:?}", action);

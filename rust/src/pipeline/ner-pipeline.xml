@@ -1,0 +1,8 @@
+<pipeline>
+    <action class="CheckOrRunModelNode" inputId="model-name" outputId="" name="判断大模型是否运行,没有运行的话就运行一下">
+    </action>
+    <action class="NERExtractorNode" inputId="prompt" outputId="json" name="提取命名实体">
+    </action>
+    <action class="JsonOptimizerNode" inputId="json" outputId="result" name="优化json">
+    </action>
+</pipeline>

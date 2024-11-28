@@ -5,6 +5,7 @@ mod mlp_test;
 #[macro_use]
 pub mod macros;
 mod command;
+mod gan;
 mod reflection_pad2d;
 mod resnet_generator_test;
 mod unet;
