@@ -13,3 +13,5 @@ cargo test --release --package rust_lib_ai_tools --lib -- web_server::test::test
 cargo test --package rust_lib_ai_tools --lib -- tests::reflection_pad2d::test::test_reflection_pad2d -- --nocapture
 
 cargo.exe test --release --package rust_lib_ai_tools --lib -- llm::bigcode::tests::test_gpt_bigcode --exact --show-output
+
+cargo.exe test --release --package rust_lib_ai_tools --lib -- tests::gan::dcgan::tests::train --exact --show-output  -- --nocapture

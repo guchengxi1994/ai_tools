@@ -67,25 +67,25 @@ impl Generator {
 
 impl Module for Generator {
     fn forward(&self, xs: &candle_core::Tensor) -> candle_core::Result<candle_core::Tensor> {
-        println!("generator1 shape {:?}", xs.shape());
+        // println!("generator1 shape {:?}", xs.shape());
         let xs = self.conv1.forward(xs)?;
         let xs = self.bn1.forward_t(&xs, self.is_train)?;
         let xs = xs.relu()?;
 
-        println!("generator2 shape {:?}", xs.shape());
+        // println!("generator2 shape {:?}", xs.shape());
         let xs = self.conv2.forward(&xs)?;
         let xs = self.bn2.forward_t(&xs, self.is_train)?;
         let xs = xs.relu()?;
 
-        println!("generator3 shape {:?}", xs.shape());
+        // println!("generator3 shape {:?}", xs.shape());
         let xs = self.conv3.forward(&xs)?;
         let xs = self.bn3.forward_t(&xs, self.is_train)?;
         let xs = xs.relu()?;
 
-        println!("generator4 shape {:?}", xs.shape());
+        // println!("generator4 shape {:?}", xs.shape());
         let xs = self.last.forward(&xs)?;
 
-        println!("generator5 shape {:?}", xs.shape());
+        // println!("generator5 shape {:?}", xs.shape());
         xs.tanh()
     }
 }
@@ -141,32 +141,39 @@ impl Discriminator {
 
 impl Module for Discriminator {
     fn forward(&self, xs: &candle_core::Tensor) -> candle_core::Result<candle_core::Tensor> {
-        println!("discriminator1 shape {:?}", xs.shape());
+        // println!("discriminator1 shape {:?}", xs.shape());
         let xs = self.conv1.forward(xs)?;
         let xs = leaky_relu(&xs, 0.2)?;
 
-        println!("discriminator2 shape {:?}", xs.shape());
+        // println!("discriminator2 shape {:?}", xs.shape());
         let xs = self.conv2.forward(&xs)?;
         let xs = self.bn2.forward_t(&xs, true)?;
         let xs = leaky_relu(&xs, 0.2)?;
 
-        println!("discriminator3 shape {:?}", xs.shape());
+        // println!("discriminator3 shape {:?}", xs.shape());
         let xs = self.conv3.forward(&xs)?;
         let xs = self.bn3.forward_t(&xs, true)?;
         let xs = leaky_relu(&xs, 0.2)?;
 
-        println!("discriminator4 shape {:?}", xs.shape());
+        // println!("discriminator4 shape {:?}", xs.shape());
         let xs = self.out.forward(&xs)?;
 
-        println!("discriminator5 shape {:?}", xs.shape());
+        // println!("discriminator5 shape {:?}", xs.shape());
         sigmoid(&xs)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use candle_core::{DType, Device};
+    use std::io::Write;
+
+    use candle_core::{DType, Device, Tensor};
     use candle_nn::{Optimizer, VarMap};
+
+    use crate::tests::utils::{
+        files_to_tensor, read_100_files, read_10_files, save_tensor_as_image,
+        save_tensor_as_rgb_image,
+    };
 
     use super::*;
 
@@ -195,6 +202,92 @@ mod tests {
         println!("loss: {}", loss);
         loss.backward()?;
         adam_g.backward_step(&loss)?;
+
+        anyhow::Ok(())
+    }
+
+    #[test]
+    fn train() -> anyhow::Result<()> {
+        let count = 100;
+        let d = Device::cuda_if_available(0)?;
+        let train_path = r"D:\workspace\yellow2anime\realFaces\";
+        let train_files = read_100_files(train_path.to_string())?;
+        let train_tensor = files_to_tensor(train_files, &d, 32, 32, 3)?;
+
+        let varmap_d = VarMap::new();
+        let varmap_g = VarMap::new();
+        let vs_g = VarBuilder::from_varmap(&varmap_g, DType::F32, &d);
+        let vs_d = VarBuilder::from_varmap(&varmap_d, DType::F32, &d);
+        let model = Generator::new(vs_g.clone(), true, 3)?;
+        let dis = Discriminator::new(vs_d.clone(), 3)?;
+
+        let mut param = candle_nn::ParamsAdamW::default();
+        param.lr = 0.0002;
+        param.beta1 = 0.5;
+        let mut adam_g = candle_nn::AdamW::new(varmap_g.all_vars(), param.clone())?;
+        let mut adam_d = candle_nn::AdamW::new(varmap_d.all_vars(), param.clone())?;
+
+        for epoch in 0..20 {
+            let real_labels = candle_core::Tensor::ones((count,), DType::F32, &d)?;
+            let fake_labels = candle_core::Tensor::zeros((count,), DType::F32, &d)?;
+
+            // Train discriminator
+            let train = candle_core::Tensor::randn(0.0f32, 1.0f32, &[count, 100, 1, 1], &d)?;
+            let output = dis.forward(&train_tensor)?;
+            let d_loss_real = candle_nn::loss::binary_cross_entropy_with_logit(
+                &output.flatten_all()?,
+                &real_labels,
+            )?;
+            // let real_score = output.clone();
+
+            let fake_images = model.forward(&train)?;
+            let output = dis.forward(&fake_images)?;
+            let d_loss_fake = candle_nn::loss::binary_cross_entropy_with_logit(
+                &output.flatten_all()?,
+                &fake_labels,
+            )?;
+            // let fake_score = output.clone();
+            let d_loss = (d_loss_real + d_loss_fake)?;
+            d_loss.backward()?;
+            adam_d.backward_step(&d_loss)?;
+
+            let fake_images = model.forward(&train)?;
+            let output = dis.forward(&fake_images)?;
+            let g_loss = candle_nn::loss::binary_cross_entropy_with_logit(
+                &output.flatten_all()?,
+                &real_labels,
+            )?;
+
+            g_loss.backward()?;
+            adam_g.backward_step(&g_loss)?;
+
+            eprintln!(
+                "epoch: {}, g_loss: {:?}  d_loss: {:?}",
+                epoch,
+                g_loss.to_vec0::<f32>()?,
+                d_loss.to_vec0::<f32>()?
+            );
+            std::io::stdout().flush()?;
+        }
+
+        varmap_g.save("generator.bin")?;
+
+        anyhow::Ok(())
+    }
+
+    #[test]
+    fn test_generator() -> anyhow::Result<()> {
+        let d = Device::cuda_if_available(0)?;
+        let mut varmap_g = VarMap::new();
+        varmap_g.load("generator.bin")?;
+        let vs_g = VarBuilder::from_varmap(&varmap_g, DType::F32, &d);
+        let g = Generator::new(vs_g, false, 3)?;
+
+        let noise = Tensor::randn(0.0f32, 1.0f32, &[1, 100, 1, 1], &d)?;
+        let output = g.forward(&noise)?;
+        println!("output shape: {:?}", output.shape());
+
+        save_tensor_as_rgb_image(&output, "test_generator.png", 32, 32)?;
 
         anyhow::Ok(())
     }

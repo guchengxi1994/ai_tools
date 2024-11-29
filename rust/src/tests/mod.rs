@@ -9,6 +9,7 @@ mod gan;
 mod reflection_pad2d;
 mod resnet_generator_test;
 mod unet;
+mod utils;
 
 #[allow(unused_imports, dead_code, unused_variables)]
 mod tests {
